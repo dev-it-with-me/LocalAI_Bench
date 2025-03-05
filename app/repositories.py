@@ -1,19 +1,12 @@
 """
-Base repository and re-exports for LocalAI Bench application.
+Base repository for LocalAI Bench application.
 
-This module provides the base repository class for entity operations
-and re-exports service-specific repositories.
+This module provides the base repository class for entity operations.
+Service-specific repositories should import this class and extend it.
 """
 
 from typing import Generic, Protocol, Type, TypeVar, cast
 from pydantic import BaseModel
-
-# Re-export service repositories
-from app.services.benchmark_service.repositories import BenchmarkRunRepository, TaskResultRepository
-from app.services.category_service.repositories import CategoryRepository
-from app.services.model_service.repositories import ModelRepository
-from app.services.task_service.repositories import TaskRepository
-from app.services.template_service.repositories import TemplateRepository
 from app.utils import JsonFileHandler, get_logger
 
 # Type variable for generic repository, constrained to BaseModel
@@ -92,12 +85,4 @@ class BaseRepository(Generic[T]):
         return self.handler.exists(entity_id)
 
 
-__all__ = [
-    "BaseRepository",
-    "BenchmarkRunRepository", 
-    "CategoryRepository",
-    "ModelRepository",
-    "TaskRepository",
-    "TaskResultRepository",
-    "TemplateRepository",
-]
+__all__ = ["BaseRepository"]

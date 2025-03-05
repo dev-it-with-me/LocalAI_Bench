@@ -139,3 +139,11 @@ class TemplateNotFoundError(BaseError):
 class ImportConflictError(BaseError):
     """Raised when there is a conflict during import."""
     pass
+
+
+class ModelTestError(Exception):
+    """Exception raised for errors in the model testing process."""
+    def __init__(self, message: str, model_id: str):
+        self.message = message
+        self.model_id = model_id
+        super().__init__(self.message)

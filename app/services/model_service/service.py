@@ -7,11 +7,11 @@ from typing import Any
 from app.adapters.base import ModelAdapterFactory
 from app.enums import ModelTypeEnum
 from app.exceptions import ValidationError, ModelTestError
-from app.repositories import ModelRepository
+from app.services.model_service.repositories import ModelRepository
 from app.utils import get_logger
+from app.services.model_service.schemas import ModelParametersSchema
 
-from .models import Model, ModelParameters
-from .enums import ModelStatusEnum, QuantizationTypeEnum
+from app.services.model_service.models import Model
 
 
 class ModelService:
@@ -32,10 +32,13 @@ class ModelService:
         api_url: str | None = None,
         api_key: str | None = None,
         api_version: str | None = None,
-        quantization: None |str = None,
-    ) -> ModelModel:
+        parameters: None | dict[str, Any] = None,
+        memory_required: None | float = None,
+        gpu_required: bool = False,
+        quantization: None | str = None,
+    ) -> Model:
         """Create a new model."""
-        model = ModelModel(
+        model = Model(
             name=name,
             type=type,
             model_id=model_id,
@@ -55,16 +58,16 @@ class ModelService:
         else:
             raise ValidationError("Failed to create model")
 
-    async def get_model(self, model_id: str) -> ModelModel:
+    async def get_model(self, model_id: str) -> Model:
         """Get a model by ID."""
         model = self.model_repo.get_by_id(model_id)
         if not model:
             raise ValidationError(f"Model not found: {model_id}")
         return model
 
-    async def list_models(self, type: None |ModelTypeEnum = None) -> list[ModelModel]:
+    async def list_models(self, type: None |ModelTypeEnum = None) -> list[Model]:
         """Get all models, optionally filtered by type."""
-        models = self.model_repo.get_all()
+        models = self.model_repo.list_all()
         if type:
             models = [m for m in models if m.type == type]
         return models
@@ -79,9 +82,9 @@ class ModelService:
         api_version: None |str = None,
         parameters: None |dict[str, Any] = None,
         memory_required: None |float = None,
-        gpu_required: None |bool = None,
+        gpu_required: bool = False,
         quantization: None |str = None,
-    ) -> ModelModel:
+    ) -> Model:
         """Update a model."""
         model = await self.get_model(model_id)
         

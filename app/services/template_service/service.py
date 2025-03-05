@@ -2,19 +2,19 @@
 Template service implementation.
 """
 
-from typing import Dict, List, Optional
-
 from app.enums import TemplateTypeEnum
 from app.exceptions import ValidationError
-from app.models import (
-    TemplateModel,
-    TaskModel,
-    TestCaseSchema,
+from app.services.template_service.models import Template
+from app.services.task_service.models import Task
+from app.services.task_service.repositories import TaskRepository
+from app.services.template_service.repositories import TemplateRepository
+from app.services.template_service.schemas import (
     InputSchemaFieldSchema,
     OutputSchemaFieldSchema,
     EvaluationCriteriaSchema,
+    TestCaseSchema
 )
-from app.repositories import TemplateRepository, TaskRepository
+
 from app.utils import get_logger
 
 
@@ -33,13 +33,13 @@ class TemplateService:
         template_id: str,
         category: TemplateTypeEnum,
         description: str,
-        input_schema: Dict[str, InputSchemaFieldSchema],
-        output_schema: Dict[str, OutputSchemaFieldSchema],
-        evaluation_criteria: Dict[str, EvaluationCriteriaSchema],
+        input_schema: dict[str, InputSchemaFieldSchema],
+        output_schema: dict[str, OutputSchemaFieldSchema],
+        evaluation_criteria: dict[str, EvaluationCriteriaSchema],
         test_cases: None | list[TestCaseSchema] = None,
-    ) -> TemplateModel:
+    ) -> Template:
         """Create a new template."""
-        template = TemplateModel(
+        template = Template(
             name=name,
             template_id=template_id,
             category=category,
@@ -59,7 +59,7 @@ class TemplateService:
         else:
             raise ValidationError("Failed to create template")
 
-    async def get_template(self, template_id: str) -> TemplateModel:
+    async def get_template(self, template_id: str) -> Template:
         """Get a template by ID."""
         template = self.template_repo.get_by_id(template_id)
         if not template:
@@ -68,9 +68,9 @@ class TemplateService:
 
     async def list_templates(
         self, category: None | TemplateTypeEnum = None
-    ) -> list[TemplateModel]:
+    ) -> list[Template]:
         """Get all templates, optionally filtered by category."""
-        templates = self.template_repo.get_all()
+        templates = self.template_repo.list_all()
         if category:
             templates = [t for t in templates if t.category == category]
         return templates
@@ -80,11 +80,11 @@ class TemplateService:
         template_id: str,
         name: None | str = None,
         description: None | str = None,
-        input_schema: None | Dict[str, InputSchemaFieldSchema] = None,
-        output_schema: None | Dict[str, OutputSchemaFieldSchema] = None,
-        evaluation_criteria: None | Dict[str, EvaluationCriteriaSchema] = None,
+        input_schema: None | dict[str, InputSchemaFieldSchema] = None,
+        output_schema: None | dict[str, OutputSchemaFieldSchema] = None,
+        evaluation_criteria: None | dict[str, EvaluationCriteriaSchema] = None,
         test_cases: None | list[TestCaseSchema] = None,
-    ) -> TemplateModel:
+    ) -> Template:
         """Update a template."""
         template = await self.get_template(template_id)
         
@@ -116,16 +116,11 @@ class TemplateService:
         template = await self.get_template(template_id)
         
         # Check if template is used by any tasks
-        tasks = self.task_repo.get_all()
+        tasks = self.task_repo.list_all()
         tasks_using_template = [t for t in tasks if t.template_id == template_id]
         if tasks_using_template:
             raise ValidationError(
                 f"Template is in use by {len(tasks_using_template)} tasks",
-                details={
-                    "template_id": template_id,
-                    "task_count": len(tasks_using_template),
-                    "task_ids": [t.id for t in tasks_using_template]
-                }
             )
         
         # Delete template
@@ -134,24 +129,21 @@ class TemplateService:
             
         self.logger.info(f"Deleted template: {template_id}")
 
-    async def validate_template_schema(self, template: TemplateModel) -> None:
+    async def validate_template_schema(self, template: Template) -> None:
         """Validate a template's schema against test cases."""
         if not template.input_schema:
             raise ValidationError(
                 "Template must have input schema",
-                details={"template_id": template.id}
             )
             
         if not template.output_schema:
             raise ValidationError(
                 "Template must have output schema",
-                details={"template_id": template.id}
             )
             
         if not template.evaluation_criteria:
             raise ValidationError(
                 "Template must have evaluation criteria",
-                details={"template_id": template.id}
             )
             
         # Validate test cases if present
@@ -162,10 +154,6 @@ class TemplateService:
                     if field_schema.required and field_name not in test_case.input_data:
                         raise ValidationError(
                             f"Test case missing required input field: {field_name}",
-                            details={
-                                "template_id": template.id,
-                                "test_case": test_case.id
-                            }
                         )
                 
                 # Validate expected output against schema
@@ -173,19 +161,15 @@ class TemplateService:
                     for field_name, field_schema in template.output_schema.items():
                         if field_schema.required and field_name not in test_case.expected_output:
                             raise ValidationError(
-                                f"Test case missing required output field: {field_name}",
-                                details={
-                                    "template_id": template.id,
-                                    "test_case": test_case.id
-                                }
+                                f"Test case missing required output field: {field_name}"
                             )
 
-    async def get_template_tasks(self, template_id: str) -> list[TaskModel]:
+    async def get_template_tasks(self, template_id: str) -> list[Task]:
         """Get all tasks using a template."""
         template = await self.get_template(template_id)
         
         tasks = []
-        for task in self.task_repo.get_all():
+        for task in self.task_repo.list_all():
             if task.template_id == template_id:
                 tasks.append(task)
                 

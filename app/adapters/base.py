@@ -6,10 +6,10 @@ It ensures consistent behavior across different model types (Hugging Face, Ollam
 """
 
 import abc
-from typing import Any, TypeVar, Generic, AsyncIterator
-
+from typing import TypeVar, Generic
+from collections.abc import AsyncIterator
 from app.enums import ModelTypeEnum
-from app.models import ModelModel
+from app.services.model_service.models import Model
 from app.exceptions import ModelAdapterError
 
 # Type variable for response types
@@ -19,7 +19,7 @@ T = TypeVar('T')
 class ModelAdapter(Generic[T], abc.ABC):
     """Base adapter interface for interacting with AI models."""
     
-    def __init__(self, model_config: ModelModel):
+    def __init__(self, model_config: Model):
         """Initialize the model adapter.
         
         Args:
@@ -125,7 +125,7 @@ class ModelAdapterFactory:
         cls._adapter_classes.append(adapter_class)
     
     @classmethod
-    def create_adapter(cls, model_config: ModelModel) -> ModelAdapter:
+    def create_adapter(cls, model_config: Model) -> ModelAdapter:
         """Create a model adapter instance for the given model configuration.
         
         Args:

@@ -6,8 +6,11 @@ from typing import Any, Dict, List, Optional
 
 from app.enums import TaskStatusEnum
 from app.exceptions import ValidationError
-from app.models import TaskModel
-from app.repositories import CategoryRepository, TaskRepository, TemplateRepository
+from app.services.task_service.models import Task
+from app.services.category_service.repositories import CategoryRepository
+from app.services.task_service.repositories import TaskRepository
+from app.services.template_service.repositories import TemplateRepository
+
 from app.utils import get_logger
 
 
@@ -31,7 +34,7 @@ class TaskService:
         expected_output: Optional[Dict[str, Any]] = None,
         evaluation_weights: Optional[Dict[str, float]] = None,
         status: TaskStatusEnum = TaskStatusEnum.DRAFT,
-    ) -> TaskModel:
+    ) -> Task:
         """Create a new task."""
         # Validate template exists
         template = self.template_repo.get_by_id(template_id)
@@ -51,7 +54,7 @@ class TaskService:
                     raise ValidationError(f"Required input field missing: {field_name}")
 
         # Create task
-        task = TaskModel(
+        task = Task(
             name=name,
             template_id=template_id,
             description=description,
@@ -75,7 +78,7 @@ class TaskService:
         else:
             raise ValidationError("Failed to create task")
 
-    async def get_task(self, task_id: str) -> TaskModel:
+    async def get_task(self, task_id: str) -> Task:
         """Get a task by ID."""
         task = self.task_repo.get_by_id(task_id)
         if not task:
@@ -86,9 +89,9 @@ class TaskService:
         self,
         category_id: Optional[str] = None,
         status: Optional[TaskStatusEnum] = None,
-    ) -> List[TaskModel]:
+    ) -> List[Task]:
         """Get all tasks, optionally filtered by category and/or status."""
-        tasks = self.task_repo.get_all()
+        tasks = self.task_repo.list_all()
 
         # Apply category filter
         if category_id:
@@ -110,7 +113,7 @@ class TaskService:
         expected_output: Optional[Dict[str, Any]] = None,
         evaluation_weights: Optional[Dict[str, float]] = None,
         status: Optional[TaskStatusEnum] = None,
-    ) -> TaskModel:
+    ) -> Task:
         """Update a task."""
         task = await self.get_task(task_id)
 
@@ -178,25 +181,20 @@ class TaskService:
 
         self.logger.info(f"Deleted task: {task_id}")
 
-    async def validate_task(self, task: TaskModel) -> None:
+    async def validate_task(self, task: Task) -> None:
         """Validate a task's configuration."""
         # Get template for validation
         template = self.template_repo.get_by_id(task.template_id)
         if not template:
             raise ValidationError(
                 f"Template not found: {task.template_id}",
-                details={"task_id": task.id}
             )
 
         # Validate input data against template schema
         for field_name, field_schema in template.input_schema.items():
             if field_schema.required and field_name not in task.input_data:
                 raise ValidationError(
-                    f"Required input field missing: {field_name}",
-                    details={
-                        "task_id": task.id,
-                        "field": field_name
-                    }
+                    f"Required input field missing: {field_name}"
                 )
 
         # Validate evaluation weights if provided
@@ -204,11 +202,7 @@ class TaskService:
             for criterion in task.evaluation_weights:
                 if criterion not in template.evaluation_criteria:
                     raise ValidationError(
-                        f"Invalid evaluation criterion: {criterion}",
-                        details={
-                            "task_id": task.id,
-                            "criterion": criterion
-                        }
+                        f"Invalid evaluation criterion: {criterion}"
                     )
 
         # Validate category if assigned
@@ -216,9 +210,5 @@ class TaskService:
             category = self.category_repo.get_by_id(task.category_id)
             if not category:
                 raise ValidationError(
-                    f"Category not found: {task.category_id}",
-                    details={
-                        "task_id": task.id,
-                        "category_id": task.category_id
-                    }
+                    f"Category not found: {task.category_id}"
                 )

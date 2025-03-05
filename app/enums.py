@@ -59,8 +59,7 @@ class DataTypeEnum(Enum):
 
 class ImportExportTypeEnum(Enum):
     """Types of import/export operations."""
-    FULL_SUITE = "full_suite"
+    MODEL = "model"
     CATEGORY = "category"
     TASK_SET = "task_set"
-    RESULTS = "results"
     TEMPLATE = "template"

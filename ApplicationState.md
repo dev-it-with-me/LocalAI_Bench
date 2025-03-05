@@ -2,11 +2,10 @@
 
 ## How to work with this document
 
-This document provides a snapshot of the current state of the LocalAI Bench application. 
-It is a way of communicating the current state of the application between the AI developer and the Project Manager.
-It includes details about the data models, services, API endpoints, and UI components. It also contains information about what should be implemented next and any known issues or bugs - as a guideline for you as a AI developer.
-This document is intended to be a living document that is updated as the application evolves - when you make changes to the application, you should update this document to reflect those changes in the 'Current State' section and mark tasks as done in the 'Action Points' section. 
-When Project Manager reviews the application, they will refer to this document to understand the current state of the application and add new requirements or changes to the 'Action Points' section.
+This document tracks the state of the project and is updated by the Project Manager AI and AI Developer based on their roles.
+
+- **Project Manager AI:** Add new features to "Action Points" or errors to "Known Issues" as requested by the human developer. See `project_manager_workflow.md`.
+- **AI Developer:** Implement tasks from "Action Points," fix bugs from "Known Issues," and update "Current State" after every task. See `ai_developer_workflow.md`.
 
 ## Current State
 
@@ -171,35 +170,25 @@ graph TD
    └── MemoryScoreStrategy
    ```
 
-#### Common Issues and Solutions
-
-1. **Benchmark Failures**:
-   - Issue: Model timeout/errors
-   - Solution: Individual task results preserved, benchmark continues
-   - Recovery: Can restart from last successful task
-
-2. **Data Consistency**:
-   - Issue: Concurrent file access
-   - Solution: File locking in repositories
-   - Workaround: Retry operations with backoff
-
-3. **Memory Usage**:
-   - Issue: Large benchmark results
-   - Solution: Streaming result processing
-   - Monitoring: Memory usage tracking per model
-
-4. **Performance**:
-   - Issue: Slow JSON operations
-   - Solution: Caching frequently accessed data
-   - Optimization: Batch file operations
-
 ## Action Points (What should be implemented next)
 
 Okay, here's the "Action Points" section, restructured to focus on the remaining tasks, using the detailed, file-linked format:
 
-## Action Points
+### Known Issues
 
-### Initial Project Setup
+### NameError in app/models.py
+- **Description**: NameError: name 'ModelParameters' is not defined from 'app/models'.
+- **Status**: Resolved
+
+### Method Name Mismatch in CategoryRepository
+- **Description**: AttributeError in category_service.routes: 'CategoryRepository' object has no attribute 'get_all'. Did you mean: 'list_all'?
+- **Location**: app/services/category_service/routes.py, line 26
+- **Stack**: Error occurs in list_categories endpoint when trying to call get_all() on category_service
+- **Root Cause**: Method name mismatch - code is calling get_all() but the repository implements list_all()
+- **Fix**: Updated CategoryService to use the correct method name list_all() and fixed ValidationError usage
+- **Status**: Resolved
+
+### Tasks
 
 #### Task: Set up Docker Configuration
 

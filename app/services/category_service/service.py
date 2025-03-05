@@ -2,11 +2,12 @@
 Category service implementation.
 """
 
-from typing import List, Optional
+from typing import  Optional
 
 from app.exceptions import ValidationError
-from app.models import CategoryModel, TaskModel
-from app.repositories import CategoryRepository, TaskRepository
+from app.services.category_service.models import Category
+from app.services.task_service.models import Task
+from app.services.category_service.repositories import CategoryRepository, TaskRepository
 from app.utils import get_logger
 
 
@@ -28,9 +29,9 @@ class CategoryService:
         complexity_weight: float = 1.0,
         cost_weight: float = 1.0,
         memory_weight: float = 1.0,
-    ) -> CategoryModel:
+    ) -> Category:
         """Create a new category."""
-        category = CategoryModel(
+        category = Category(
             name=name,
             description=description,
             time_weight=time_weight,
@@ -47,16 +48,16 @@ class CategoryService:
         else:
             raise ValidationError("Failed to create category")
 
-    async def get_category(self, category_id: str) -> CategoryModel:
+    async def get_category(self, category_id: str) -> Category:
         """Get a category by ID."""
         category = self.category_repo.get_by_id(category_id)
         if not category:
             raise ValidationError(f"Category not found: {category_id}")
         return category
 
-    async def list_categories(self) -> List[CategoryModel]:
+    async def list_categories(self) -> list[Category]:
         """Get all categories."""
-        return self.category_repo.get_all()
+        return self.category_repo.list_all()
 
     async def update_category(
         self,
@@ -68,7 +69,7 @@ class CategoryService:
         complexity_weight: Optional[float] = None,
         cost_weight: Optional[float] = None,
         memory_weight: Optional[float] = None,
-    ) -> CategoryModel:
+    ) -> Category:
         """Update a category."""
         category = await self.get_category(category_id)
 
@@ -101,8 +102,7 @@ class CategoryService:
         # Check if category has tasks
         if category.task_ids:
             raise ValidationError(
-                f"Cannot delete category with tasks: {category_id}",
-                details={"task_count": len(category.task_ids)}
+                f"Cannot delete category with tasks: {category_id} (has {len(category.task_ids)} tasks)"
             )
 
         # Delete category
@@ -111,7 +111,7 @@ class CategoryService:
 
         self.logger.info(f"Deleted category: {category_id}")
 
-    async def get_category_tasks(self, category_id: str) -> List[TaskModel]:
+    async def get_category_tasks(self, category_id: str) -> list[Task]:
         """Get all tasks in a category."""
         category = await self.get_category(category_id)
 
@@ -125,7 +125,7 @@ class CategoryService:
 
     async def add_task_to_category(
         self, category_id: str, task_id: str
-    ) -> CategoryModel:
+    ) -> Category:
         """Add a task to a category."""
         category = await self.get_category(category_id)
 
@@ -137,11 +137,7 @@ class CategoryService:
         # Check if task already in category
         if task_id in category.task_ids:
             raise ValidationError(
-                f"Task already in category: {task_id}",
-                details={
-                    "category_id": category_id,
-                    "task_id": task_id
-                }
+                f"Task {task_id} is already in category {category_id}"
             )
 
         # Add task to category
@@ -155,18 +151,14 @@ class CategoryService:
 
     async def remove_task_from_category(
         self, category_id: str, task_id: str
-    ) -> CategoryModel:
+    ) -> Category:
         """Remove a task from a category."""
         category = await self.get_category(category_id)
 
         # Check if task in category
         if task_id not in category.task_ids:
             raise ValidationError(
-                f"Task not in category: {task_id}",
-                details={
-                    "category_id": category_id,
-                    "task_id": task_id
-                }
+                f"Task {task_id} not in category {category_id}"
             )
 
         # Remove task from category

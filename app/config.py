@@ -5,7 +5,6 @@ This module provides a centralized configuration system using Pydantic Settings.
 Environment variables can override default settings by using the prefix LOCALAI_BENCH_.
 """
 
-import os
 from pathlib import Path
 from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -55,7 +54,19 @@ class AppSettings(BaseSettings):
     ENABLE_CORS: bool = True
     CORS_ORIGINS: list[str] = ["http://localhost:5173"]  # Default Vite dev server
 
-    @field_validator("DATA_DIR", "LOG_DIR")
+    def data_subdirs(self) -> dict[str, Path]:
+        """Return a dictionary of data subdirectories."""
+        return {
+            "categories": self.CATEGORIES_DIR,
+            "tasks": self.TASKS_DIR,
+            "templates": self.TEMPLATES_DIR,
+            "models": self.MODELS_DIR,
+            "results": self.RESULTS_DIR,
+            "images": self.IMAGES_DIR,
+        }
+
+    @field_validator("DATA_DIR", "LOG_DIR", "CATEGORIES_DIR", "TASKS_DIR", 
+                    "TEMPLATES_DIR", "MODELS_DIR", "RESULTS_DIR", "IMAGES_DIR")
     def validate_dir_exists(cls, path_str: str) -> str:
         """Validate that directories exist and create them if they don't."""
         path = Path(path_str)

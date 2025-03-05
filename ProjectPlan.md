@@ -62,11 +62,13 @@ The dashboard provides a summary of the scores for each model in each category, 
 - Export functionality for reports
 
 ## Supported Models
+- Model filtering by task compatibility
+
 ### Hugging Face
 - Support for transformers library models
-- Direct integration with Hugging Face Hub API
-- Model filtering by task compatibility
-- Version tracking for consistent benchmarking
+- Integration with Hugging Face Hub API by manual implementation model adapter for each model
+- Configuration options for model parameters
+- Local deployment instructions
 
 ### Ollama
 - Support for all compatible Ollama models
@@ -217,7 +219,6 @@ The export/import system allows users to share benchmarks, tasks, and results wi
 - **Benchmark Suite Import**: Import a complete benchmark suite from another user
 - **Category Import**: Add a new category with all associated tasks
 - **Task Import**: Import individual tasks into existing categories
-- **Template Import**: Import task templates for creating new tasks
 - **Results Import**: Import benchmark results for comparison
 
 #### Export Example
@@ -263,7 +264,6 @@ The export/import system allows users to share benchmarks, tasks, and results wi
     - Result storage and analysis
   - Pydantic for data validation
   - Structured logging with correlation IDs
-  - SQLite for persistence with JSON export option
   - Async processing for concurrent benchmarks
 - **Benchmark Service**: Manages benchmark runs, status tracking, and results analysis.
 - **Category Service**: Handles CRUD operations for categories and task assignments.
@@ -312,9 +312,7 @@ Each service will have its own:
 
 ### Security Considerations
 - Secure storage for API credentials
-- Rate limiting for API requests
 - Input validation and sanitization
-- Optional air-gapped mode for sensitive environments
 
 ### Deployment Options
 - Docker containers with compose for easy setup

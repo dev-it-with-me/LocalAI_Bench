@@ -13,8 +13,7 @@ class TaskResultRepository(BaseRepository[TaskResult]):
     
     def __init__(self):
         """Initialize the task result repository."""
-        data_dirs = settings.data_subdirs()
-        directory = os.path.join(data_dirs["results"], "task_results")
+        directory = os.path.join(settings.RESULTS_DIR, "task_results")
         os.makedirs(directory, exist_ok=True)
         super().__init__(directory, TaskResult)
         
@@ -48,8 +47,7 @@ class BenchmarkRunRepository(BaseRepository[BenchmarkRun]):
     
     def __init__(self):
         """Initialize the benchmark run repository."""
-        data_dirs = settings.data_subdirs()
-        directory = os.path.join(data_dirs["results"], "benchmark_runs")
+        directory = os.path.join(settings.RESULTS_DIR, "benchmark_runs")
         os.makedirs(directory, exist_ok=True)
         super().__init__(directory, BenchmarkRun)
         

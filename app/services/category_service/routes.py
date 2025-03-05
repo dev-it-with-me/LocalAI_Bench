@@ -54,7 +54,7 @@ async def remove_task_from_category(category_id: str, task_id: str) -> CategoryR
     """Remove a task from a category."""
     return await category_service.remove_task_from_category(category_id, task_id)
 
-@category_router.get("/{category_id}/tasks", response_model=List[dict])
-async def get_category_tasks(category_id: str) -> List[dict]:
+@category_router.get("/{category_id}/tasks", response_model=list[dict])
+async def get_category_tasks(category_id: str) -> list[dict]:
     """Get all tasks in a category."""
     return await category_service.get_category_tasks(category_id)

@@ -6,12 +6,10 @@ from typing import Any
 
 from app.enums import ImportExportTypeEnum
 from app.exceptions import ImportConflictError
-from app.repositories import (
-    CategoryRepository,
-    ModelRepository,
-    TaskRepository,
-    TemplateRepository,
-)
+from app.services.category_service.repositories import CategoryRepository
+from app.services.model_service.repositories import ModelRepository
+from app.services.task_service.repositories import TaskRepository
+from app.services.template_service.repositories import TemplateRepository
 
 class ImportExportService:
     """Service for import/export operations."""
@@ -103,9 +101,9 @@ class ImportExportService:
     def _get_repository(self, type: ImportExportTypeEnum) -> Any:
         """Get the appropriate repository for the given type."""
         repositories = {
-            ImportExportTypeEnum.CATEGORIES: self.category_repository,
-            ImportExportTypeEnum.MODELS: self.model_repository,
-            ImportExportTypeEnum.TASKS: self.task_repository,
-            ImportExportTypeEnum.TEMPLATES: self.template_repository,
+            ImportExportTypeEnum.CATEGORY: self.category_repository,
+            ImportExportTypeEnum.MODEL: self.model_repository,
+            ImportExportTypeEnum.TASK_SET: self.task_repository,
+            ImportExportTypeEnum.TEMPLATE: self.template_repository,
         }
         return repositories[type]

@@ -2,11 +2,12 @@
 Repository for category service.
 """
 
+from pathlib import Path
 from app.config import settings
 from app.services.task_service.models import Task
 from app.services.category_service.models import Category
 from app.repositories import BaseRepository
-from app.repositories import TaskRepository
+from app.services.task_service.repositories import TaskRepository
 
 
 class CategoryRepository(BaseRepository[Category]):
@@ -14,8 +15,8 @@ class CategoryRepository(BaseRepository[Category]):
     
     def __init__(self):
         """Initialize the category repository."""
-        directory = settings.data_subdirs()["categories"]
-        super().__init__(directory, Category)
+        directory = Path(settings.data_subdirs()["categories"])
+        super().__init__(str(directory), Category)
         
     def get_with_tasks(self, category_id: str) -> tuple[Category | None, list[Task]]:
         """Get a category with its tasks."""

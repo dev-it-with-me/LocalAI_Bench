@@ -4,7 +4,10 @@ Main entry point for the LocalAI Bench application.
 This module initializes the FastAPI application, sets up middleware,
 exception handlers, and includes API routes.
 """
+from pathlib import Path
+import sys
 
+sys.path.append(str(Path(__file__).parent.parent))
 
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware

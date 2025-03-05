@@ -10,14 +10,15 @@ from typing import Any
 from app.adapters.base import ModelAdapterFactory
 from app.enums import TaskStatusEnum
 from app.exceptions import BenchmarkExecutionError, ValidationError
-from app.repositories import (
+from app.services.benchmark_service.repositories import (
     BenchmarkRunRepository,
-    CategoryRepository,
-    ModelRepository,
-    TaskRepository,
     TaskResultRepository,
-    TemplateRepository,
 )
+from app.services.task_service.repositories import TaskRepository
+from app.services.template_service.repositories import TemplateRepository
+from app.services.model_service.repositories import ModelRepository
+from app.services.category_service.repositories import CategoryRepository
+
 from app.utils import get_logger
 
 from app.services.model_service.models import Model
