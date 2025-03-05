@@ -7,9 +7,7 @@ Environment variables can override default settings by using the prefix LOCALAI_
 
 import os
 from pathlib import Path
-from typing import Any
-
-from pydantic import field_validator, computed_field
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -23,26 +21,23 @@ class AppSettings(BaseSettings):
     LOG_LEVEL: str = "INFO"
     
     # Path settings
-    BASE_DIR: str = str(Path(__file__).parent.parent)
-    DATA_DIR: str = str(Path(BASE_DIR) / "data")
-    LOG_DIR: str = str(Path(BASE_DIR) / "logs")
+    BASE_DIR: Path = Path(__file__).parent.parent
+    DATA_DIR: Path = Path(BASE_DIR / "data")
+    LOG_DIR: Path = Path(BASE_DIR / "logs")
+    STATIC_DIR: Path = Path(BASE_DIR / "static")
     
     # Data storage settings
-    CATEGORIES_DIR: str | None = None
-    TASKS_DIR: str | None = None
-    TEMPLATES_DIR: str | None = None
-    MODELS_DIR: str | None = None
-    RESULTS_DIR: str | None = None
-    IMAGES_DIR: str | None = None
+    CATEGORIES_DIR: Path = DATA_DIR / "categories"
+    TASKS_DIR: Path = DATA_DIR / "tasks"
+    TEMPLATES_DIR: Path = DATA_DIR / "templates"
+    MODELS_DIR: Path = DATA_DIR / "models"
+    RESULTS_DIR: Path = DATA_DIR / "results"
+    IMAGES_DIR: Path = DATA_DIR / "images"
 
     # API settings
     API_HOST: str = "0.0.0.0"
     API_PORT: int = 8000
     API_PREFIX: str = "/api/v1"
-    
-    # Security
-    SECRET_KEY: str = "development_secret_key_change_this_in_production"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 1 day
     
     # Model provider settings
     HUGGINGFACE_API_TOKEN: str | None = None
@@ -67,32 +62,7 @@ class AppSettings(BaseSettings):
         if not path.exists():
             path.mkdir(parents=True)
         return str(path)
-    
-    @computed_field
-    def data_subdirs(self) -> dict[str, str]:
-        """Return all data subdirectories for easy access."""
-        base_data_dir = Path(self.DATA_DIR)
-        
-        # Set default values for subdirectories if not explicitly set
-        categories_dir = self.CATEGORIES_DIR or str(base_data_dir / "categories")
-        tasks_dir = self.TASKS_DIR or str(base_data_dir / "tasks")
-        templates_dir = self.TEMPLATES_DIR or str(base_data_dir / "templates")
-        models_dir = self.MODELS_DIR or str(base_data_dir / "models")
-        results_dir = self.RESULTS_DIR or str(base_data_dir / "results")
-        images_dir = self.IMAGES_DIR or str(base_data_dir / "images")
-        
-        # Create directories if they don't exist
-        for dir_path in [categories_dir, tasks_dir, templates_dir, models_dir, results_dir, images_dir]:
-            os.makedirs(dir_path, exist_ok=True)
-            
-        return {
-            "categories": categories_dir,
-            "tasks": tasks_dir,
-            "templates": templates_dir,
-            "models": models_dir,
-            "results": results_dir,
-            "images": images_dir,
-        }
+
     
     model_config = SettingsConfigDict(
         env_prefix="LOCALAI_BENCH_",

@@ -5,8 +5,6 @@ This module initializes the FastAPI application, sets up middleware,
 exception handlers, and includes API routes.
 """
 
-import logging
-from typing import Callable
 
 from fastapi import FastAPI, Request, status
 from fastapi.middleware.cors import CORSMiddleware
@@ -182,15 +180,17 @@ async def fallback_exception_handler(request: Request, exc: Exception) -> JSONRe
     )
 
 
-# Application startup and shutdown events
-@app.on_event("startup")
-async def startup_event() -> None:
-    """Run startup tasks."""
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan event handler for startup and shutdown."""
     logger.info("Starting LocalAI Bench API")
     
     # Ensure data directories exist
     import os
     os.makedirs(settings.DATA_DIR, exist_ok=True)
+    os.makedirs(settings.STATIC_DIR, exist_ok=True)
     os.makedirs(settings.CATEGORIES_DIR, exist_ok=True)
     os.makedirs(settings.TASKS_DIR, exist_ok=True)
     os.makedirs(settings.TEMPLATES_DIR, exist_ok=True)
@@ -198,14 +198,9 @@ async def startup_event() -> None:
     os.makedirs(settings.RESULTS_DIR, exist_ok=True)
     os.makedirs(settings.LOG_DIR, exist_ok=True)
     
-    logger.info("LocalAI Bench API started")
+    yield
 
-
-@app.on_event("shutdown")
-async def shutdown_event() -> None:
-    """Run shutdown tasks."""
-    logger.info("Shutting down LocalAI Bench API")
-    # Add cleanup code if needed
+    logger.info("LocalAI Bench API shutdown")
 
 
 # Root endpoint
@@ -220,12 +215,11 @@ async def root() -> dict:
 
 
 @app.get("/status", tags=["Status"])
-async def status() -> dict:
+async def _status() -> dict:
     """Status endpoint returning API status."""
     return {
         "status": "ok",
         "version": "0.1.0",
-        "environment": settings.ENVIRONMENT,
         "debug": settings.DEBUG,
     }
 
@@ -248,8 +242,8 @@ if __name__ == "__main__":
     # Start the server with uvicorn when script is run directly
     uvicorn.run(
         "app.main:app",
-        host=settings.HOST,
-        port=settings.PORT,
+        host=settings.API_HOST,
+        port=settings.API_PORT,
         reload=settings.DEBUG,
         log_level=settings.LOG_LEVEL.lower(),
     )

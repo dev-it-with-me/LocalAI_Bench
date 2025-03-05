@@ -265,6 +265,31 @@ The export/import system allows users to share benchmarks, tasks, and results wi
   - Structured logging with correlation IDs
   - SQLite for persistence with JSON export option
   - Async processing for concurrent benchmarks
+- **Benchmark Service**: Manages benchmark runs, status tracking, and results analysis.
+- **Category Service**: Handles CRUD operations for categories and task assignments.
+- **Task Service**: Manages CRUD operations for tasks, category assignments, and status.
+- **Template Service**: Handles CRUD operations, validation, and task listing for templates.
+- **Model Service**: Manages CRUD operations and testing for AI models.
+- **Import/Export Service**: Provides data export/import functionality.
+
+Each service will have its own:
+- Routes (API endpoints)
+- Schemas (request/response models)
+- Services (business logic)
+- Repositories (data access)
+- Models (Pydantic models)
+- Configuration
+
+### Core Components
+- Configuration system using Pydantic Settings in `app/config.py`
+- Data models defined with Pydantic in `app/models.py` (shared models)
+- Enum definitions in `app/enums.py` (shared enums)
+- Custom exceptions in `app/exceptions.py` (shared exceptions)
+- JSON-based data storage utilities in `app/utils.py`
+- Model adapters in `app/adapters/`:
+  - `base.py` - Base adapter interface and factory
+  - `huggingface.py` - Adapter for Hugging Face models
+  - `ollama.py` - Adapter for Ollama models
 
 ### Data Management
 - JSON-based data store

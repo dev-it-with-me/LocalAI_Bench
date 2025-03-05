@@ -1,10 +1,10 @@
 """
-Enum definitions for LocalAI Bench application.
+Shared enum definitions for LocalAI Bench application.
 
-This module contains enum classes that define constants used throughout the application.
+This module contains enum classes used across multiple services.
 """
 
-from enum import Enum, auto
+from enum import Enum
 
 
 class TaskStatusEnum(Enum):
@@ -42,7 +42,7 @@ class ModelTypeEnum(Enum):
     OPENAI = "openai"
     ANTHROPIC = "anthropic"
     CUSTOM_API = "custom_api"
-    
+
 
 class DataTypeEnum(Enum):
     """Data types supported in templates."""
