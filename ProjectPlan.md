@@ -407,22 +407,27 @@ Each service will have its own:
 ### Component Library
 
 #### Design System
-- **Typography**:
-  - Primary Font: Montserrat
-  - Scale: 12px/0.75rem (small), 14px/0.875rem (base), 16px/1rem (large), 20px/1.25rem (xl)
-
-- **Component Variants**:
-  - Buttons: Primary, Secondary, Tertiary, Danger
-  - Cards: Standard, Interactive, Status
-  - Form Controls: Input, Select, Toggle, Slider
+- **Theme**: Using Skeleton UI's theme system with custom theme configuration
+- **Typography**: Default Skeleton UI typography with monospace font
+- **Colors**: Custom theme colors defined in `local_bench_theme.ts`
 
 #### UI Components
-- **Data Tables**: Sortable, filterable, with pagination
-- **Charts**: Line, bar, radar, scatter with interactive tooltips
-- **Forms**: Standardized input components with validation
-- **Modals/Dialogs**: For workflow interruptions and confirmations
-- **Toast Notifications**: For system feedback
-- **Loading States**: Skeleton loaders, progress indicators
+- **Core Components**: Using Skeleton UI's built-in components
+  - AppBar, AppShell for layout structure
+  - Tables for data display
+  - Forms and input components
+  - Modal and toast components
+  - Progress bars and loading states
+  - Cards and containers
+- **Custom Components**: Only when needed to extend Skeleton UI
+  - Specialized benchmark visualizations
+  - Task-specific interfaces
+  - Custom chart components
+
+#### Loading States
+- Using Skeleton UI's built-in skeleton loaders
+- Progress bars for benchmark operations
+- Toast notifications for feedback
 
 ### Interaction Design
 

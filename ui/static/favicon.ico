@@ -1,0 +1,5 @@
+# Create the static directory if it doesn't exist
+mkdir -p /home/devit/dev/LocalAI_Bench/front/static
+
+# Create an empty favicon.ico file (you should replace this with a real favicon)
+touch /home/devit/dev/LocalAI_Bench/front/static/favicon.ico

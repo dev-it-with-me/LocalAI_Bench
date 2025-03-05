@@ -176,18 +176,6 @@ Okay, here's the "Action Points" section, restructured to focus on the remaining
 
 ### Known Issues
 
-### NameError in app/models.py
-- **Description**: NameError: name 'ModelParameters' is not defined from 'app/models'.
-- **Status**: Resolved
-
-### Method Name Mismatch in CategoryRepository
-- **Description**: AttributeError in category_service.routes: 'CategoryRepository' object has no attribute 'get_all'. Did you mean: 'list_all'?
-- **Location**: app/services/category_service/routes.py, line 26
-- **Stack**: Error occurs in list_categories endpoint when trying to call get_all() on category_service
-- **Root Cause**: Method name mismatch - code is calling get_all() but the repository implements list_all()
-- **Fix**: Updated CategoryService to use the correct method name list_all() and fixed ValidationError usage
-- **Status**: Resolved
-
 ### Tasks
 
 #### Task: Set up Docker Configuration
@@ -271,17 +259,6 @@ Okay, here's the "Action Points" section, restructured to focus on the remaining
 
 ### Frontend Structure
 
-#### Task: Create Component Library
-
-*   **Files Affected:**
-    *   `ui/src/lib/components/`: Create component files (e.g., `Button.svelte`, `Card.svelte`, `Input.svelte`, etc.).
-
-*   **Sub-Tasks:**
-    1.  Create individual Svelte components for each UI element (buttons, cards, form controls, modals, notifications, etc.).
-    2.  Implement component logic and styling (using Tailwind classes).
-    3.  Define props for each component to control its behavior and appearance.
-    4.  (Optional) Add Storybook for component development and documentation.
-
 #### Task: Implement Three-Panel Layout
 
 * **Files Affected:**
@@ -319,8 +296,8 @@ These tasks follow the same general pattern as "Develop Dashboard":
 *   Create Svelte components for each UI element.
 *   Fetch data from the API.
 *   Display data.
-*   Implement user interactions (forms, buttons, drag-and-drop, etc.).
-* Use Tailwind for consistent design
+*   Implement user interactions (forms, buttons, drag-and-drop, etc.) - use skeleton UI for this
+*   Use Tailwind for consistent design
 
 ### Import/Export Functionality
 
