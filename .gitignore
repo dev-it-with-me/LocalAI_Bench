@@ -5,9 +5,15 @@ build/
 dist/
 wheels/
 *.egg-info
+uv.lock
 
 # Virtual environments
 .venv
 
 # Copilot
 .github
+
+# Ignore pictures
+**.png
+**.jpg
+**.jpeg
