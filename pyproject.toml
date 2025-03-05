@@ -1,0 +1,21 @@
+[project]
+name = "localai-bench"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi[standard]>=0.115.8",
+    "torch",
+    "torchvision",
+    "transformers>=4.48.3",
+    "ollama",
+    "pydantic-settings",
+    "accelerate",
+    "huggingface-hub>=0.28.1",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.15.0",
+]
