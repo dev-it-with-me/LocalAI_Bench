@@ -1,11 +1,7 @@
 <script lang="ts">
-	// Simple reactive state to simulate dashboard data
-	let activeModels = $state([
-		{ id: 'model1', name: 'Llama-2-7b', type: 'Ollama', status: 'active' },
-		{ id: 'model2', name: 'Mistral-7B-Instruct', type: 'Hugging Face', status: 'active' },
-		{ id: 'model3', name: 'GPT-J-6B', type: 'Hugging Face', status: 'inactive' }
-	]);
-
+	import { getModels } from '$lib/services/api';
+	
+	let activeModels = $state([]);
 	let recentBenchmarks = $state([
 		{
 			id: 'bench1',
@@ -23,14 +19,21 @@
 		},
 		{ id: 'bench3', name: 'Recruitment Process', date: '2023-10-13', status: 'failed', score: null }
 	]);
-
-	// Simulate loading state
+	
 	let isLoading = $state(true);
+	let error = $state('');
 
-	// Simulate loading time
-	setTimeout(() => {
-		isLoading = false;
-	}, 1000);
+	async function loadModels() {
+		try {
+			activeModels = await getModels();
+		} catch (e) {
+			error = e.message;
+		} finally {
+			isLoading = false;
+		}
+	}
+
+	loadModels();
 </script>
 
 <svelte:head>

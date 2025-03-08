@@ -1,0 +1,262 @@
+{
+  "task_id": "a4f2c8b1-8f1a-4b2a-9e3a-5b2b7e8d4c1a",
+  "task_type": "refactor",
+  "feature_request": "Refactor all API calls from Svelte components to a dedicated `api.ts` service.",
+  "summary": "Refactor API calls from Svelte components to a centralized api.ts service to improve maintainability and reusability.",
+  "priority": "high",
+  "estimated_time": 480,
+  "files_to_modify": [
+    {
+      "file_path": "/home/devit/dev/LocalAI_Bench/ui/src/routes/+page.svelte",
+      "sections": [
+        {
+          "section_title": "Remove existing API calls and import api service",
+          "existing_code": "onMount(async () => {\n    try {\n      // In a real app, fetch models from API\n      const response = await fetch('/api/models');\n      models = await response.json();\n      \n      // Mock data for development\n      if (models.length === 0) {",
+          "instructions": [
+            "Remove the existing `fetch` call within the `onMount` function.",
+            "Add an import statement at the beginning of the file to import the `getModels` function from the new `api.ts` service: `import { getModels } from '$lib/services/api';`",
+            "Replace the removed `fetch` call with a call to `getModels` from the `api.ts` service.",
+            "Update the `try...catch` block to use the new `getModels` function.",
+            "Ensure proper error handling is maintained."
+          ],
+          "expected_code_changes": null,
+          "dependencies": [],
+          "error_handling": [
+            "If `getModels` throws an error, set the `error` state variable with the error message."
+          ],
+          "preconditions": [],
+          "postconditions": [
+            "The `models` state variable will be populated with the data fetched from the API, or the `error` state variable will contain an error message."
+          ]
+        }
+      ],
+      "imports_to_add": [
+        "import { getModels } from '$lib/services/api';"
+      ],
+      "imports_to_remove": []
+    },
+    {
+      "file_path": "/home/devit/dev/LocalAI_Bench/ui/src/routes/models/+page.svelte",
+      "sections": [
+        {
+          "section_title": "Remove existing API calls and import api service",
+          "existing_code": "onMount(async () => {\n    try {\n      // In a real app, fetch models from API\n      const response = await fetch('/api/models');\n      models = await response.json();",
+          "instructions": [
+            "Remove the existing `fetch` call within the `onMount` function.",
+            "Add an import statement at the beginning of the file to import the `getModels` function from the new `api.ts` service: `import { getModels } from '$lib/services/api';`",
+            "Replace the removed `fetch` call with a call to `getModels` from the `api.ts` service.",
+            "Update the `try...catch` block to use the new `getModels` function.",
+            "Ensure proper error handling is maintained."
+          ],
+          "expected_code_changes": null,
+          "dependencies": [],
+          "error_handling": [
+            "If `getModels` throws an error, set the `error` state variable with the error message."
+          ],
+          "preconditions": [],
+          "postconditions": [
+            "The `models` state variable will be populated with the data fetched from the API, or the `error` state variable will contain an error message."
+          ]
+        }
+      ],
+      "imports_to_add": [
+        "import { getModels } from '$lib/services/api';"
+      ],
+      "imports_to_remove": []
+    },
+    {
+      "file_path": "/home/devit/dev/LocalAI_Bench/ui/src/routes/categories/+page.svelte",
+      "sections": [
+        {
+          "section_title": "Remove existing API calls and import api service",
+          "existing_code": "onMount(async () => {\n    try {\n      // In a real app, fetch categories from API\n      const response = await fetch('/api/categories');\n      categories = await response.json();",
+          "instructions": [
+            "Remove the existing `fetch` call within the `onMount` function.",
+            "Add an import statement at the beginning of the file to import the `getCategories` function from the new `api.ts` service: `import { getCategories } from '$lib/services/api';`",
+            "Replace the removed `fetch` call with a call to `getCategories` from the `api.ts` service.",
+            "Update the `try...catch` block to use the new `getCategories` function.",
+            "Ensure proper error handling is maintained."
+          ],
+          "expected_code_changes": null,
+          "dependencies": [],
+          "error_handling": [
+            "If `getCategories` throws an error, set the `error` state variable with the error message."
+          ],
+          "preconditions": [],
+          "postconditions": [
+            "The `categories` state variable will be populated with the data fetched from the API, or the `error` state variable will contain an error message."
+          ]
+        }
+      ],
+      "imports_to_add": [
+        "import { getCategories } from '$lib/services/api';"
+      ],
+      "imports_to_remove": []
+    },
+    {
+      "file_path": "/home/devit/dev/LocalAI_Bench/ui/src/routes/tasks/+page.svelte",
+      "sections": [
+        {
+          "section_title": "Remove existing API calls",
+          "existing_code": "onMount(async () => {\n    try {\n      // Mock data for development\n      // In a real app, these would be API calls",
+          "instructions": [
+            "Remove the mock data and replace with API calls.",
+            "Add import statement `import { getTasks } from '$lib/services/api';`",
+            "Call `getTasks` in `onMount` and assign the result to `tasks`.",
+            "Handle errors appropriately."
+          ],
+          "expected_code_changes": null,
+          "dependencies": [],
+          "error_handling": [
+            "Set the `error` state if the API call fails."
+          ],
+          "preconditions": [],
+          "postconditions": [
+            "Tasks are loaded from the API or an error is displayed."
+          ]
+        }
+      ],
+      "imports_to_add": [
+        "import { getTasks } from '$lib/services/api';"
+      ],
+      "imports_to_remove": []
+    },
+    {
+      "file_path": "/home/devit/dev/LocalAI_Bench/ui/src/routes/benchmark/+page.svelte",
+      "sections": [
+        {
+          "section_title": "Remove existing API calls and import api service",
+          "existing_code": "onMount(async () => {\n    try {\n      // In a real app, fetch data from API\n      const [benchmarksRes, modelsRes, categoriesRes, tasksRes] = await Promise.all([\n        fetch('/api/benchmarks'),\n        fetch('/api/models'),\n        fetch('/api/categories'),\n        fetch('/api/tasks')\n      ]);",
+          "instructions": [
+            "Remove the existing `fetch` calls within the `onMount` function.",
+            "Add import statements at the beginning of the file to import the `getBenchmarks`, `getModels`, `getCategories`, and `getTasks` functions from the new `api.ts` service: `import { getBenchmarks, getModels, getCategories, getTasks } from '$lib/services/api';`",
+            "Replace the removed `fetch` calls with calls to `getBenchmarks`, `getModels`, `getCategories`, and `getTasks` from the `api.ts` service.",
+            "Update the `Promise.all` and `try...catch` block to use the new functions.",
+            "Ensure proper error handling is maintained."
+          ],
+          "expected_code_changes": null,
+          "dependencies": [],
+          "error_handling": [
+            "If any of the API calls throw an error, set the `error` state variable with the error message."
+          ],
+          "preconditions": [],
+          "postconditions": [
+            "The `benchmarks`, `models`, `categories`, and `tasks` state variables will be populated with the data fetched from the API, or the `error` state variable will contain an error message."
+          ]
+        }
+      ],
+      "imports_to_add": [
+        "import { getBenchmarks, getModels, getCategories, getTasks } from '$lib/services/api';"
+      ],
+      "imports_to_remove": []
+    }
+  ],
+  "new_files": [
+    {
+      "file_path": "/home/devit/dev/LocalAI_Bench/ui/src/lib/services/api.ts",
+      "sections": [
+        {
+          "section_title": "Create API service functions",
+          "instructions": [
+            "Create a new file `api.ts` in the `/src/lib/services/` directory.",
+            "Implement the following functions in `api.ts`:",
+            "- `getModels(): Promise<any[]>`: Fetches models from `/api/models`.",
+            "- `getCategories(): Promise<any[]>`: Fetches categories from `/api/categories`.",
+            "- `getTasks(): Promise<any[]>`: Fetches tasks from `/api/tasks`.",
+            "- `getBenchmarks(): Promise<any[]>`: Fetches benchmarks from `/api/benchmarks`.",
+            "Each function should use `fetch` to make the API call.",
+            "Implement error handling in each function: if `response.ok` is false, throw an error with the response status text.",
+            "Ensure each function returns a Promise that resolves to the JSON response data.",
+            "Use Typescript for type safety."
+          ],
+          "expected_code_changes": null,
+          "dependencies": [],
+          "error_handling": [
+            "Each function should throw an error if the API call fails (e.g., network error, server error)."
+          ],
+          "preconditions": [],
+          "postconditions": [
+            "Each function returns a Promise that resolves to the JSON response data from the API."
+          ],
+          "data_types": []
+        }
+      ],
+      "imports_to_add": [],
+      "sections": [
+        {
+          "section_title": "API Service Code",
+          "instructions": [
+            "Create a new file `api.ts` in the `/src/lib/services/` directory.",
+            "Implement the following functions in `api.ts`:",
+            "```typescript",
+            "async function getModels(): Promise<any[]> {",
+            "  const response = await fetch('/api/models');",
+            "  if (!response.ok) {",
+            "    throw new Error(response.statusText);",
+            "  }",
+            "  return await response.json();",
+            "}",
+            "",
+            "async function getCategories(): Promise<any[]> {",
+            "  const response = await fetch('/api/categories');",
+            "  if (!response.ok) {",
+            "    throw new Error(response.statusText);",
+            "  }",
+            "  return await response.json();",
+            "}",
+            "",
+             "async function getTasks(): Promise<any[]> {",
+            "  const response = await fetch('/api/tasks');",
+            "  if (!response.ok) {",
+            "    throw new Error(response.statusText);",
+            "  }",
+            "  return await response.json();",
+            "}",
+            "",
+            "async function getBenchmarks(): Promise<any[]> {",
+            "  const response = await fetch('/api/benchmarks');",
+            "  if (!response.ok) {",
+            "    throw new Error(response.statusText);",
+            "  }",
+            "  return await response.json();",
+            "}",
+            "",
+            "export { getModels, getCategories, getTasks, getBenchmarks };",
+            "```"
+          ],
+          "expected_code_changes": null,
+          "dependencies": [],
+          "error_handling": [
+            "Each function should throw an error if the API call fails (e.g., network error, server error)."
+          ],
+          "preconditions": [],
+          "postconditions": [
+            "Each function returns a Promise that resolves to the JSON response data from the API."
+          ],
+          "data_types": []
+        }
+      ],
+      "imports_to_add": []
+    }
+  ],
+  "tests_to_add": [
+    {
+      "file_path": "/home/devit/dev/LocalAI_Bench/ui/src/lib/services/api.test.ts",
+      "instructions": [
+        "Create a new test file `api.test.ts` in the `/src/lib/services/` directory.",
+        "Write unit tests for each function in `api.ts` (`getModels`, `getCategories`, `getTasks`, `getBenchmarks`).",
+        "Mock the `fetch` function to simulate API responses (both success and failure cases).",
+        "Verify that each function returns the expected data when the API call is successful.",
+        "Verify that each function throws an error with the correct message when the API call fails.",
+        "Use a testing framework like Jest or Vitest."
+      ]
+    }
+  ],
+  "testing_notes": "Ensure all API calls are correctly mocked and that error handling is properly tested.",
+  "dependencies": [],
+  "additional_notes": {
+    "common_pitfalls": "Forgetting to handle errors in the API service functions, not mocking `fetch` correctly in tests.",
+    "edge_cases": "Handling different types of API errors (e.g., 400, 404, 500), handling empty API responses.",
+    "design_decisions": "Using `fetch` for API calls, throwing errors instead of returning null values for API failures."
+  }
+}

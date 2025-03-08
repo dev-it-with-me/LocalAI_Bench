@@ -2,7 +2,7 @@
 Category service implementation.
 """
 
-from typing import  Optional
+from typing import Optional
 
 from app.exceptions import ValidationError
 from app.services.category_service.models import Category
@@ -24,21 +24,11 @@ class CategoryService:
         self,
         name: str,
         description: str = "",
-        time_weight: float = 1.0,
-        quality_weight: float = 1.0,
-        complexity_weight: float = 1.0,
-        cost_weight: float = 1.0,
-        memory_weight: float = 1.0,
     ) -> Category:
         """Create a new category."""
         category = Category(
             name=name,
             description=description,
-            time_weight=time_weight,
-            quality_weight=quality_weight,
-            complexity_weight=complexity_weight,
-            cost_weight=cost_weight,
-            memory_weight=memory_weight,
             task_ids=[]
         )
 
@@ -64,11 +54,6 @@ class CategoryService:
         category_id: str,
         name: Optional[str] = None,
         description: Optional[str] = None,
-        time_weight: Optional[float] = None,
-        quality_weight: Optional[float] = None,
-        complexity_weight: Optional[float] = None,
-        cost_weight: Optional[float] = None,
-        memory_weight: Optional[float] = None,
     ) -> Category:
         """Update a category."""
         category = await self.get_category(category_id)
@@ -78,16 +63,6 @@ class CategoryService:
             category.name = name
         if description is not None:
             category.description = description
-        if time_weight is not None:
-            category.time_weight = time_weight
-        if quality_weight is not None:
-            category.quality_weight = quality_weight
-        if complexity_weight is not None:
-            category.complexity_weight = complexity_weight
-        if cost_weight is not None:
-            category.cost_weight = cost_weight
-        if memory_weight is not None:
-            category.memory_weight = memory_weight
 
         if self.category_repo.update(category):
             self.logger.info(f"Updated category: {category_id}")

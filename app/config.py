@@ -34,7 +34,7 @@ class AppSettings(BaseSettings):
     IMAGES_DIR: Path = DATA_DIR / "images"
 
     # API settings
-    API_HOST: str = "0.0.0.0"
+    API_HOST: str = "127.0.0.1"
     API_PORT: int = 8000
     API_PREFIX: str = "/api/v1"
     
@@ -52,7 +52,14 @@ class AppSettings(BaseSettings):
     
     # UI settings
     ENABLE_CORS: bool = True
-    CORS_ORIGINS: list[str] = ["http://localhost:5173"]  # Default Vite dev server
+    CORS_ORIGINS: list[str] = [
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+        "http://0.0.0.0:8000",
+        "http://0.0.0.0:5173"
+    ]
 
     def data_subdirs(self) -> dict[str, Path]:
         """Return a dictionary of data subdirectories."""

@@ -19,3 +19,5 @@ uv.lock
 **.jpeg
 
 /logs
+
+/data

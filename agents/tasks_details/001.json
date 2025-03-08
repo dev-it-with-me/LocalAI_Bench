@@ -1,0 +1,181 @@
+{
+    "task_id": "category-management-feature",
+    "task_type": "feature",
+    "feature_request": "Implement category management feature to allow users to add and modify categories in the LocalAI Bench application.",
+    "summary": "Implement UI and backend logic for creating, modifying, and managing categories, including setting weights for scoring criteria.",
+    "priority": "high",
+    "files_to_modify": [
+      {
+        "file_path": "ui/src/routes/categories/+page.svelte",
+        "sections": [
+          {
+            "section_title": "Add UI for creating and modifying categories",
+            "existing_code": "",
+            "instructions": [
+              "Create a form to input category name, description, and weights for time, quality, complexity, cost, and memory.",
+              "Implement logic to display existing categories in a table or list.",
+              "Add buttons for creating new categories and editing existing ones.",
+              "Implement input validation to ensure category names are unique and weights are within the acceptable range (0.1 to 5.0).",
+              "Display feedback to the user upon successful creation or modification of a category.",
+              "Use Svelte 5 runes for state management and reactivity.",
+              "Use Skeleton UI components for styling and layout."
+            ],
+            "expected_code_changes": "",
+            "dependencies": [],
+            "error_handling": [
+              "Display error messages if category creation or modification fails.",
+              "Handle cases where a user attempts to create a category with a name that already exists."
+            ],
+            "preconditions": [],
+            "postconditions": []
+          }
+        ],
+        "imports_to_add": [],
+        "imports_to_remove": []
+      },
+      {
+        "file_path": "ui/src/lib/services/api.ts",
+        "sections": [
+          {
+            "section_title": "Add API calls for creating and modifying categories",
+            "existing_code": "",
+            "instructions": [
+              "Add a function to call the backend API to create a new category.",
+              "Add a function to call the backend API to modify an existing category.",
+              "Handle potential errors from the API calls and display appropriate error messages in the UI."
+            ],
+            "expected_code_changes": "",
+            "dependencies": [],
+            "error_handling": [
+              "Handle network errors and API errors gracefully.",
+              "Display user-friendly error messages in the UI."
+            ],
+            "preconditions": [],
+            "postconditions": []
+          }
+        ],
+        "imports_to_add": [],
+        "imports_to_remove": []
+      },
+      {
+        "file_path": "app/services/category_service/routes.py",
+        "sections": [
+          {
+            "section_title": "Implement API endpoints for creating and modifying categories",
+            "existing_code": "",
+            "instructions": [
+              "Create a POST endpoint for creating a new category.",
+              "Create a PUT endpoint for modifying an existing category.",
+              "Validate the request data using Pydantic models.",
+              "Call the appropriate service functions to create or modify the category.",
+              "Return appropriate HTTP status codes and response data."
+            ],
+            "expected_code_changes": "",
+            "dependencies": [],
+            "error_handling": [
+              "Handle validation errors and database errors gracefully.",
+              "Return appropriate error responses to the client."
+            ],
+            "preconditions": [],
+            "postconditions": []
+          }
+        ],
+        "imports_to_add": [],
+        "imports_to_remove": []
+      },
+      {
+        "file_path": "app/services/category_service/service.py",
+        "sections": [
+          {
+            "section_title": "Implement service functions for creating and modifying categories",
+            "existing_code": "",
+            "instructions": [
+              "Create a function to create a new category in the database.",
+              "Create a function to modify an existing category in the database.",
+              "Implement validation logic to ensure category names are unique and weights are within the acceptable range (0.1 to 5.0).",
+              "Raise appropriate exceptions if validation fails or database errors occur."
+            ],
+            "expected_code_changes": "",
+            "dependencies": [],
+            "error_handling": [
+              "Handle database errors and validation errors gracefully.",
+              "Raise custom exceptions for specific error conditions."
+            ],
+            "preconditions": [],
+            "postconditions": []
+          }
+        ],
+        "imports_to_add": [],
+        "imports_to_remove": []
+      },
+      {
+        "file_path": "app/services/category_service/models.py",
+        "sections": [
+          {
+            "section_title": "Define the Category model",
+            "existing_code": "",
+            "instructions": [
+              "Define a Pydantic model for the Category entity, including fields for name, description, time_weight, quality_weight, complexity_weight, cost_weight, and memory_weight.",
+              "Add validation to ensure weights are within the acceptable range (0.1 to 5.0)."
+            ],
+            "expected_code_changes": "",
+            "dependencies": [],
+            "error_handling": [],
+            "preconditions": [],
+            "postconditions": []
+          }
+        ],
+        "imports_to_add": [],
+        "imports_to_remove": []
+      },
+      {
+        "file_path": "app/services/category_service/schemas.py",
+        "sections": [
+          {
+            "section_title": "Define request and response schemas for category creation and modification",
+            "existing_code": "",
+            "instructions": [
+              "Define Pydantic schemas for the request data for creating and modifying categories.",
+              "Define Pydantic schemas for the response data for category creation and modification.",
+              "Include validation to ensure category names are unique and weights are within the acceptable range (0.1 to 5.0)."
+            ],
+            "expected_code_changes": "",
+            "dependencies": [],
+            "error_handling": [],
+            "preconditions": [],
+            "postconditions": []
+          }
+        ],
+        "imports_to_add": [],
+        "imports_to_remove": []
+      }
+    ],
+    "new_files": [],
+    "tests_to_add": [
+      {
+        "file_path": "app/services/category_service/tests/test_routes.py",
+        "instructions": [
+          "Add tests for the category creation endpoint.",
+          "Add tests for the category modification endpoint.",
+          "Test with valid and invalid data.",
+          "Test error handling."
+        ]
+      },
+          {
+        "file_path": "app/services/category_service/tests/test_service.py",
+        "instructions": [
+          "Add tests for the category creation service function.",
+          "Add tests for the category modification service function.",
+          "Test with valid and invalid data.",
+          "Test error handling."
+        ]
+      }
+    ],
+    "testing_notes": "Ensure thorough testing of category creation and modification functionality, including validation and error handling.",
+    "dependencies": [],
+    "additional_notes": {
+      "common_pitfalls": "Ensure proper validation of category weights and handle cases where a user attempts to create a category with a name that already exists.",
+      "edge_cases": "Test with edge cases such as very long category names, special characters in category names, and extreme weight values.",
+      "design_decisions": "Use Pydantic models for data validation and ensure consistency with existing UI design and coding standards."
+    }
+  }
