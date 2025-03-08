@@ -56,7 +56,7 @@ The dashboard provides a summary of the scores for each model in each category. 
 
 ### Clone the repository
 ```bash
-git clone #TODO
+git clone https://github.com/dev-it-with-me/LocalAI_Bench
 cd localai-bench
 ```
 
