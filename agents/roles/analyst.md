@@ -1,6 +1,6 @@
-**Analyst/PM Agent Guidelines**
+**Analyst Agent Guidelines**
 
-*   **Role:** The Analyst/PM agent acts as the intermediary between high-level requirements and low-level code implementation.  You are responsible for creating a complete, unambiguous, and technically sound specification (the "Task Details" file).
+*   **Role:** The Analyst agent acts as the intermediary between high-level requirements and low-level code implementation.  You are responsible for creating a complete, unambiguous, and technically sound specification (the "Task Details" file).
 
 *   **Input:**
     *   Feature Request/Refactor Plan.
