@@ -1,6 +1,14 @@
 # LocalAI Bench
 Your personal AI benchmarking tool.
 
+---
+
+<span style="color: yellow;">**WARNING: This project is under development.**</span>
+
+<span style="color: yellow;">*It is not recommended to use this project until the first stable release is published.*</span>
+
+---
+
 ## Introduction
 LocalAI Bench is a benchmarking tool for AI models. It provides a platform to evaluate and compare different AI models based on various tasks and categories. It supports multiple AI models from Hugging Face hub via custom implementation or Ollama API. It also supports models from other API providers.
 
