@@ -17,21 +17,32 @@
 	let startWidth = 0;
 	let panelElement: HTMLElement;
 
+	let previousComponentProps: Record<string, any> = {};
 	let showPanel = $derived(!isCollapsed && (hasContent ?? true));
 
 	function togglePanel(): void {
 		isCollapsed = !isCollapsed;
+		panelWidth = minWidth;
 	}
 
 	// Get the dynamic component and props
 	let component = $derived(children ? children()?.component : null);
 	let componentProps = $derived(children ? children()?.props : {});
 
-	// Automatically expand panel when component or props change
+	// Automatically expand panel when content changes
 	$effect(() => {
+		// Track title changes to detect new task selection
+		if (hasContent) {
+			isCollapsed = false;
+		}
+		
+		
 		if (component !== null || Object.keys(componentProps).length > 0) {
 			isCollapsed = false;
 		}
+
+		// Update previous props to check for changes
+		previousComponentProps = componentProps;
 	});
 
 	// Update panel width using CSS variable when width changes

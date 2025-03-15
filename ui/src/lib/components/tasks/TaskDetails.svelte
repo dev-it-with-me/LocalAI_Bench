@@ -104,7 +104,7 @@
             <span class="text-sm text-surface-300">Complexity</span>
             <div class="flex items-center">
               <div class="h-2 flex-1 bg-surface-700 rounded-full overflow-hidden">
-                <div class="bg-purple-500 h-full" style="width: {Math.min(selectedTask.evaluation_weights.complexity * 25, 100)}%"></div>
+                <div class="bg-primary-500 h-full" style="width: {Math.min(selectedTask.evaluation_weights.complexity * 25, 100)}%"></div>
               </div>
               <span class="ml-2 text-sm min-w-[2rem] text-center">{selectedTask.evaluation_weights.complexity}</span>
             </div>
@@ -113,7 +113,7 @@
             <span class="text-sm text-surface-300">Accuracy</span>
             <div class="flex items-center">
               <div class="h-2 flex-1 bg-surface-700 rounded-full overflow-hidden">
-                <div class="bg-green-500 h-full" style="width: {Math.min(selectedTask.evaluation_weights.accuracy * 25, 100)}%"></div>
+                <div class="bg-secondary-500 h-full" style="width: {Math.min(selectedTask.evaluation_weights.accuracy * 25, 100)}%"></div>
               </div>
               <span class="ml-2 text-sm min-w-[2rem] text-center">{selectedTask.evaluation_weights.accuracy}</span>
             </div>
@@ -122,7 +122,7 @@
             <span class="text-sm text-surface-300">Latency</span>
             <div class="flex items-center">
               <div class="h-2 flex-1 bg-surface-700 rounded-full overflow-hidden">
-                <div class="bg-blue-500 h-full" style="width: {Math.min(selectedTask.evaluation_weights.latency * 25, 100)}%"></div>
+                <div class="bg-success-500 h-full" style="width: {Math.min(selectedTask.evaluation_weights.latency * 25, 100)}%"></div>
               </div>
               <span class="ml-2 text-sm min-w-[2rem] text-center">{selectedTask.evaluation_weights.latency}</span>
             </div>
@@ -131,7 +131,7 @@
             <span class="text-sm text-surface-300">Cost/Memory Usage</span>
             <div class="flex items-center">
               <div class="h-2 flex-1 bg-surface-700 rounded-full overflow-hidden">
-                <div class="bg-red-500 h-full" style="width: {Math.min(selectedTask.evaluation_weights.cost_memory_usage * 25, 100)}%"></div>
+                <div class="bg-error-600 h-full" style="width: {Math.min(selectedTask.evaluation_weights.cost_memory_usage * 25, 100)}%"></div>
               </div>
               <span class="ml-2 text-sm min-w-[2rem] text-center">{selectedTask.evaluation_weights.cost_memory_usage}</span>
             </div>
@@ -149,7 +149,7 @@
     
     <div class="flex space-x-2 pt-4">
       <button onclick={() => onEditTask(selectedTask)} class="px-3 py-1 bg-primary-500 text-white rounded-md hover:bg-primary-600 flex-1">Edit</button>
-      <button onclick={() => onDeleteTask(selectedTask.id)} class="px-3 py-1 bg-red-500 text-white rounded-md hover:bg-red-600 flex-1">Delete</button>
+      <button onclick={() => onDeleteTask(selectedTask.id)} class="px-3 py-1 bg-error-500 text-white rounded-md hover:bg-error-600 flex-1">Delete</button>
     </div>
   {/if}
 </div>
