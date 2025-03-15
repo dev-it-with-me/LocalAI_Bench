@@ -90,7 +90,7 @@ async function getTasks(): Promise<any[]> {
     throw new Error(response.statusText);
   }
   const data = await response.json();
-  return data.tasks;
+  return Array.isArray(data) ? data : data.tasks || [];
 }
 
 async function getTask(id: string): Promise<any> {
@@ -182,7 +182,8 @@ async function getTemplates(): Promise<any[]> {
   if (!response.ok) {
     throw new Error(response.statusText);
   }
-  return await response.json();
+  const data = await response.json();
+  return Array.isArray(data) ? data : data.templates || [];
 }
 
 export { 

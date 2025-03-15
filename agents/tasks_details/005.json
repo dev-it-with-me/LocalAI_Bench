@@ -1,0 +1,200 @@
+{
+    "task_id": "005-ui-task-management",
+    "task_type": "feature",
+    "feature_request": "Create UI components to handle task creation along with integrating the corresponding API functionality for adding new tasks, editing existing tasks, and deleting tasks.",
+    "summary": "Develop Svelte 5 UI components for task management (create, edit, delete) and integrate them with the FastAPI backend API.",
+    "priority": "high",
+    "files_to_modify": [
+      {
+        "file_path": "/home/devit/dev/LocalAI_Bench/ui/src/routes/tasks/+page.svelte",
+        "sections": [
+          {
+            "section_title": "Add edit and delete functionality to task list",
+            "existing_code": "<!-- Existing task list display code -->",
+            "instructions": [
+              "Add edit and delete buttons to each task item in the task list.",
+              "The edit button should call the `editTask` function with the corresponding task ID.",
+              "The delete button should call the `deleteTask` function with the corresponding task ID after a confirmation.",
+              "Ensure that the buttons are properly styled and accessible."
+            ],
+            "dependencies": [
+              "editTask",
+              "deleteTask"
+            ],
+            "error_handling": [
+              "Display an error message if the task deletion fails."
+            ]
+          },
+          {
+            "section_title": "Implement task creation form",
+            "existing_code": "<!-- Existing page structure -->",
+            "instructions": [
+              "Create a form to capture task details: name, description, category, template, input data, expected output, complexity, accuracy weight, latency weight, throughput weight, cost weight.",
+              "Use Svelte 5 runes for form state management.",
+              "Implement input validation to ensure required fields are filled and data types are correct.",
+              "On form submission, call the `createTask` API function to create a new task.",
+              "Display success or error messages based on the API response.",
+              "After successful task creation, refresh the task list."
+            ],
+            "dependencies": [
+              "createTask",
+              "getTasks"
+            ],
+            "error_handling": [
+              "Display an error message if task creation fails.",
+              "Handle validation errors and display appropriate messages to the user."
+            ]
+          },
+          {
+            "section_title": "Implement task editing form",
+            "existing_code": "<!-- Existing page structure -->",
+            "instructions": [
+              "Create a form to edit task details: name, description, category, template, input data, expected output, complexity, accuracy weight, latency weight, throughput weight, cost weight.",
+              "Pre-populate the form with the existing task data.",
+              "Use Svelte 5 runes for form state management.",
+              "Implement input validation to ensure required fields are filled and data types are correct.",
+              "On form submission, call the `updateTask` API function to update the task.",
+              "Display success or error messages based on the API response.",
+              "After successful task update, refresh the task list."
+            ],
+            "dependencies": [
+              "updateTask",
+              "getTasks"
+            ],
+            "error_handling": [
+              "Display an error message if task update fails.",
+              "Handle validation errors and display appropriate messages to the user."
+            ]
+          },
+          {
+            "section_title": "Implement task deletion",
+            "existing_code": "<!-- Existing page structure -->",
+            "instructions": [
+              "Implement a function to delete a task using the `deleteTask` API function.",
+              "Display a confirmation dialog before deleting the task.",
+              "On successful deletion, remove the task from the task list.",
+              "Display success or error messages based on the API response."
+            ],
+            "dependencies": [
+              "deleteTask",
+              "getTasks"
+            ],
+            "error_handling": [
+              "Display an error message if task deletion fails."
+            ]
+          }
+        ],
+        "imports_to_add": [],
+        "imports_to_remove": []
+      },
+      {
+        "file_path": "/home/devit/dev/LocalAI_Bench/ui/src/lib/services/api.ts",
+        "sections": [
+          {
+            "section_title": "Create task API function",
+            "existing_code": "/* Existing API functions */",
+            "instructions": [
+              "Create a function named `createTask` that sends a POST request to the `/api/tasks` endpoint.",
+              "The function should accept a `taskData` object as input, containing the task details.",
+              "The function should return the created task object on success, or throw an error on failure.",
+              "Include structured logging for the API call."
+            ],
+            "dependencies": [],
+            "error_handling": [
+              "Throw an error with a descriptive message if the API call fails."
+            ]
+          },
+          {
+            "section_title": "Update task API function",
+            "existing_code": "/* Existing API functions */",
+            "instructions": [
+              "Create a function named `updateTask` that sends a PATCH request to the `/api/tasks/{id}` endpoint.",
+              "The function should accept a `taskId` and a `taskData` object as input, containing the task details to update.",
+              "The function should return the updated task object on success, or throw an error on failure.",
+              "Include structured logging for the API call."
+            ],
+            "dependencies": [],
+            "error_handling": [
+              "Throw an error with a descriptive message if the API call fails."
+            ]
+          },
+          {
+            "section_title": "Delete task API function",
+            "existing_code": "/* Existing API functions */",
+            "instructions": [
+              "Create a function named `deleteTask` that sends a DELETE request to the `/api/tasks/{id}` endpoint.",
+              "The function should accept a `taskId` as input.",
+              "The function should return `true` on success, or throw an error on failure.",
+              "Include structured logging for the API call."
+            ],
+            "dependencies": [],
+            "error_handling": [
+              "Throw an error with a descriptive message if the API call fails."
+            ]
+          }
+        ],
+        "imports_to_add": [],
+        "imports_to_remove": []
+      },
+      {
+        "file_path": "/home/devit/dev/LocalAI_Bench/app/services/task_service/routes.py",
+        "sections": [
+          {
+            "section_title": "Update create_task route",
+            "existing_code": "```python\n@task_router.post(\"\", response_model=TaskResponse, status_code=status.HTTP_201_CREATED)\nasync def create_task(task: TaskCreateRequest) -> TaskResponse:\n    \"\"\"Create a new task.\"\"\"\n    return await task_service.create_task(**task.model_dump())\n```",
+            "instructions": [
+              "Ensure that the `create_task` route correctly handles the new fields: `complexity`, `accuracy_weight`, `latency_weight`, `throughput_weight`, and `cost_weight`.",
+              "Update the route to pass these fields to the `task_service.create_task` function."
+            ],
+            "dependencies": [
+              "TaskCreateRequest",
+              "task_service.create_task"
+            ],
+            "error_handling": []
+          },
+          {
+            "section_title": "Update update_task route",
+            "existing_code": "```python\n@task_router.patch(\"/{task_id}\", response_model=TaskResponse)\nasync def update_task(task_id: str, task: TaskUpdateRequest) -> TaskResponse:\n    \"\"\"Update a task.\"\"\"\n    return await task_service.update_task(task_id, **task.model_dump())\n```",
+            "instructions": [
+              "Ensure that the `update_task` route correctly handles the new fields: `complexity`, `accuracy_weight`, `latency_weight`, `throughput_weight`, and `cost_weight`.",
+              "Update the route to pass these fields to the `task_service.update_task` function."
+            ],
+            "dependencies": [
+              "TaskUpdateRequest",
+              "task_service.update_task"
+            ],
+            "error_handling": []
+          }
+        ],
+        "imports_to_add": [],
+        "imports_to_remove": []
+      }
+    ],
+    "new_files": [],
+    "tests_to_add": [
+      {
+        "file_path": "/home/devit/dev/LocalAI_Bench/ui/tests/test_tasks.py",
+        "instructions": [
+          "Add UI tests to verify the task creation, editing, and deletion functionality.",
+          "Verify that the task list is updated correctly after each operation.",
+          "Verify that error messages are displayed correctly when API calls fail.",
+          "Test input validation to ensure that invalid data is rejected."
+        ]
+      },
+      {
+        "file_path": "/home/devit/dev/LocalAI_Bench/app/tests/test_task_service.py",
+        "instructions": [
+          "Add unit tests to verify the `create_task`, `update_task`, and `delete_task` functions in the `TaskService`.",
+          "Test with valid and invalid data to ensure that the functions behave correctly.",
+          "Test error handling to ensure that exceptions are raised when appropriate."
+        ]
+      }
+    ],
+    "testing_notes": "Pay close attention to edge cases and boundary conditions when testing the task management functionality. Ensure that the UI is responsive and accessible.",
+    "dependencies": [],
+    "additional_notes": {
+      "common_pitfalls": "Potential problems include incorrect API endpoint URLs, data type mismatches, and unhandled errors. Ensure that all API calls are properly handled and that error messages are displayed to the user.",
+      "edge_cases": "Consider edge cases such as empty input fields, invalid data types, and API call failures.",
+      "design_decisions": "The UI should follow the existing design conventions and integrate seamlessly with the current application. Use Svelte 5 runes for state management and responsive layouts."
+    }
+  }

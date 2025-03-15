@@ -62,30 +62,121 @@
 
 ## Svelte 5 + TypeScript
 
-### Runes Mode Required:
-- Use $state for local state
-- Use $derived for computed values
-- Use $effect for side effects
-- Use $props for component properties
+### State Management
+- Use `$state<Type>(initialValue)` for reactive state
+- Use `$derived` for computed values
+- Use `$effect(() => {})` for side effects
+- Use `$props<{prop: Type}>()` for props with types
 
-```svelte
-<script lang="ts">
-  // Using Svelte 5 props with runes
-  let { user } = $props<{
-    user: User;
-    onConfirm?: (detail: { id: string }) => void;
-  }>();
+### Component Context Pattern
+```ts
+// Setting context in parent
+const contextObj = { get prop() { return prop; }, set prop(v) { prop = v; } };
+setContext('key', contextObj);
 
-  // Reactive state
-  let isOpen = $state(false);
-  let isLoading = $derived(user.status === 'loading');
-</script>
+// Using in child
+const ctx = getContext('key');
+ctx.prop = newValue;
 ```
 
-### Event handling syntax:
-- onclick instead of on:click
-- onsubmit instead of on:submit
-- Use export let onEventName pattern
+### Event Handling
+- Use `onclick={handler}` not `on:click`
+- Components: `onEventName={handler}`
+
+### Component Structure
+```svelte
+<script lang="ts">
+  // 1. Imports
+  import { getContext } from 'svelte';
+  import ComponentA from '$lib/components/path/ComponentA.svelte';
+  
+  // 2. TypeDefs
+  type Entity = { id: string; /* props */ };
+  
+  // 3. Context
+  const ctx = getContext('key');
+  
+  // 4. State
+  let items = $state<Entity[]>([]);
+  let selected = $state<Entity|null>(null);
+  let isLoading = $state(true);
+  let error = $state<string|null>(null);
+  
+  // 5. Derived
+  let hasItems = $derived(items.length > 0);
+  
+  // 6. Effects
+  $effect(() => { updatePanel(); });
+  
+  // 7. Functions
+  async function load() { /* fetch */ }
+  function updatePanel() { /* update context */ }
+  
+  // 8. Initialization
+  load();
+</script>
+
+<div class="space-y-6">
+  <!-- Header + Action -->
+  <div class="flex justify-between items-center">
+    <h1 class="text-2xl font-bold">Title</h1>
+    <button 
+      onclick={addNew}
+      class="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-md">
+      New Item
+    </button>
+  </div>
+  
+  {#if isLoading}
+    <!-- Loading spinner -->
+  {:else if error}
+    <!-- Error message + retry -->
+  {:else if !hasItems}
+    <!-- Empty state -->
+  {:else}
+    <!-- Content -->
+  {/if}
+</div>
+```
+
+### UI States
+- Loading: Centered spinner
+- Error: Red box with retry button
+- Empty: Icon + description + action button
+- Content: Lists/forms with actions
+
+### CRUD Pattern
+```ts
+// Load
+async function load() {
+  try {
+    isLoading = true;
+    error = null;
+    items = await apiService.getItems();
+  } catch (e) {
+    error = e instanceof Error ? e.message : 'Failed';
+  } finally {
+    isLoading = false;
+  }
+}
+
+// Create/Update
+async function saveItem() {
+  if (selected?.id) {
+    const updated = await apiService.update(id, data);
+    items = items.map(i => i.id === id ? updated : i);
+  } else {
+    const created = await apiService.create(data);
+    items = [...items, created];
+  }
+}
+
+// Delete
+async function deleteItem(id) {
+  await apiService.delete(id);
+  items = items.filter(i => i.id !== id);
+}
+```
 
 ### Use modern control structures:
 - {#if} without redundant conditions

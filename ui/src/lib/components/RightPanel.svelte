@@ -1,24 +1,108 @@
 <script lang="ts">
+	import { setContext } from 'svelte';
+	import { browser } from '$app/environment';
+
 	let isCollapsed = $state(false);
 	let { title, hasContent, children } = $props<{
 		title?: string;
 		hasContent?: boolean;
-		children?: any;
+		children?: () => any;
 	}>();
+
+	// Default width in pixels (80 in Tailwind is 20rem, which is ~320px)
+	let minWidth = 320;
+	let panelWidth = $state(minWidth);
+	let isResizing = $state(false);
+	let startX = 0;
+	let startWidth = 0;
+	let panelElement: HTMLElement;
 
 	let showPanel = $derived(!isCollapsed && (hasContent ?? true));
 
 	function togglePanel(): void {
 		isCollapsed = !isCollapsed;
 	}
+
+	// Get the dynamic component and props
+	let component = $derived(children ? children()?.component : null);
+	let componentProps = $derived(children ? children()?.props : {});
+
+	// Automatically expand panel when component or props change
+	$effect(() => {
+		if (component !== null || Object.keys(componentProps).length > 0) {
+			isCollapsed = false;
+		}
+	});
+
+	// Update panel width using CSS variable when width changes
+	$effect(() => {
+		if (panelElement && !isCollapsed) {
+			panelElement.style.setProperty('--panel-width', `${panelWidth}px`);
+		}
+	});
+
+	// Start resizing
+	function startResize(event: MouseEvent) {
+		isResizing = true;
+		startX = event.clientX;
+		startWidth = panelWidth;
+		
+		// Prevent text selection during resize
+		document.body.style.userSelect = 'none';
+		
+			// Remove transition during resize for better performance
+		if (panelElement) {
+			panelElement.classList.add('resizing');
+		}
+		
+		// Add event listeners for mouse movement and release
+		if (browser) {
+			document.addEventListener('mousemove', handleMouseMove);
+			document.addEventListener('mouseup', stopResize);
+		}
+	}
+	
+	// Handle mouse movement during resize using requestAnimationFrame for better performance
+	function handleMouseMove(event: MouseEvent) {
+		if (!isResizing) return;
+		
+		requestAnimationFrame(() => {
+			const diff = startX - event.clientX;
+			const newWidth = Math.max(minWidth, startWidth + diff);
+			panelWidth = newWidth;
+		});
+	}
+	
+	// Stop resizing
+	function stopResize() {
+		isResizing = false;
+		document.body.style.userSelect = '';
+		
+		// Restore transition after resize
+		if (panelElement) {
+			panelElement.classList.remove('resizing');
+		}
+		
+		if (browser) {
+			document.removeEventListener('mousemove', handleMouseMove);
+			document.removeEventListener('mouseup', stopResize);
+		}
+	}
 </script>
 
 <aside
-	class="bg-surface-800 border-surface-700 flex h-full flex-col border-l transition-all duration-300 {isCollapsed
+	bind:this={panelElement}
+	class="bg-surface-800 border-surface-700 flex h-full flex-col border-l relative {isCollapsed
 		? 'w-0 overflow-hidden'
-		: 'w-80'}"
+		: 'panel-width'}"
 >
 	{#if !isCollapsed}
+		<!-- Resize handle -->
+		<div 
+			class="absolute left-0 top-0 w-1 h-full cursor-ew-resize hover:bg-surface-500 z-10"
+			onmousedown={startResize}
+		></div>
+		
 		<div class="border-surface-700 flex items-center justify-between border-b p-4">
 			<h2 class="text-lg font-semibold text-white">{title || 'Configuration'}</h2>
 			<button
@@ -63,8 +147,10 @@
 					</svg>
 					<p class="mt-4">Select an item to view its details and configuration options</p>
 				</div>
+			{:else if component}
+				<!-- Render dynamic component using svelte:component -->
+				<svelte:component this={component} {...componentProps} />
 			{/if}
-			{@render children()}
 		</div>
 	{:else}
 		<button
@@ -88,3 +174,16 @@
 		</button>
 	{/if}
 </aside>
+
+<style>
+	/* Use CSS variables for better performance */
+	.panel-width {
+		width: var(--panel-width, 320px);
+		transition: width 0.3s ease;
+	}
+	
+	/* Remove transition during active resizing for better performance */
+	.resizing {
+		transition: none !important;
+	}
+</style>

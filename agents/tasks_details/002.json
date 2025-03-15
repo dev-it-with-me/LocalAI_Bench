@@ -1,0 +1,120 @@
+{
+  "task_id": "a9f7a3b2-5b9d-4b1a-9c1e-7b2a8d5c6e4f",
+  "task_type": "refactor",
+  "feature_request": "Refactor the scoring system to be at the task level instead of the category level.",
+  "summary": "Refactor the scoring system to calculate scores at the task level, modifying data models, services, and UI components.",
+  "priority": "high",
+  "files_to_modify": [
+    {
+      "file_path": "app/models.py",
+      "sections": [
+        {
+          "section_title": "Modify Category model to remove scoring criteria",
+          "existing_code": "...",
+          "instructions": [
+            "Remove the scoring criteria fields (e.g., `criteria`, `weights`) from the `Category` model.",
+            "Add a relationship to a new `TaskScoring` model."
+          ],
+          "expected_code_changes": "...",
+          "dependencies": [],
+          "error_handling": [],
+          "preconditions": [],
+          "postconditions": []
+        },
+        {
+          "section_title": "Create TaskScoring model",
+          "existing_code": "...",
+          "instructions": [
+            "Create a new `TaskScoring` model with fields for scoring criteria and weights.",
+            "Include fields for task_id, criteria (JSON), weights (JSON).",
+            "Define a one-to-one relationship with the Task model."
+          ],
+          "expected_code_changes": "...",
+          "dependencies": [],
+          "error_handling": [],
+          "preconditions": [],
+          "postconditions": []
+        }
+      ],
+      "imports_to_add": [],
+      "imports_to_remove": []
+    },
+    {
+      "file_path": "app/services/category_service/service.py",
+      "sections": [
+        {
+          "section_title": "Modify category creation/update to remove scoring logic",
+          "existing_code": "...",
+          "instructions": [
+            "Remove the logic related to scoring criteria from the category creation and update methods.",
+            "Update the methods to handle the new `TaskScoring` model."
+          ],
+          "expected_code_changes": "...",
+          "dependencies": [],
+          "error_handling": [],
+          "preconditions": [],
+          "postconditions": []
+        }
+      ],
+      "imports_to_add": [],
+      "imports_to_remove": []
+    },
+    {
+      "file_path": "app/services/category_service/models.py",
+      "sections": [
+        {
+          "section_title": "Remove scoring related models",
+          "existing_code": "...",
+          "instructions": [
+            "Remove any models related to category scoring, as this logic will be moved to the task level."
+          ],
+          "expected_code_changes": "...",
+          "dependencies": [],
+          "error_handling": [],
+          "preconditions": [],
+          "postconditions": []
+        }
+      ],
+      "imports_to_add": [],
+      "imports_to_remove": []
+    },
+    {
+      "file_path": "app/services/category_service/schemas.py",
+      "sections": [
+        {
+          "section_title": "Update schemas to remove scoring fields",
+          "existing_code": "...",
+          "instructions": [
+            "Remove scoring related fields from the category schemas.",
+            "Ensure the schemas align with the updated data models."
+          ],
+          "expected_code_changes": "...",
+          "dependencies": [],
+          "error_handling": [],
+          "preconditions": [],
+          "postconditions": []
+        }
+      ],
+      "imports_to_add": [],
+      "imports_to_remove": []
+    }
+  ],
+  "new_files": [],
+  "tests_to_add": [
+    {
+      "file_path": "tests/test_task_scoring.py",
+      "instructions": [
+        "Create new unit tests for the `TaskScoring` model.",
+        "Test the creation, update, and deletion of task scoring criteria.",
+        "Test edge cases and boundary conditions."
+      ]
+    }
+  ],
+  "testing_notes": "Ensure all tests pass after refactoring. Pay attention to edge cases and data validation.",
+  "dependencies": [],
+  "additional_notes": {
+    "common_pitfalls": "Ensure that the refactoring does not break existing functionality. Pay close attention to data migrations.",
+    "edge_cases": "Handle cases where tasks do not have scoring criteria defined.",
+    "design_decisions": "The scoring criteria and weights are stored as JSON strings in the `TaskScoring` model for flexibility."
+  }
+}

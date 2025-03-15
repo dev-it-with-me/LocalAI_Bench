@@ -4,6 +4,7 @@
 	import RightPanel from '$lib/components/RightPanel.svelte';
 	import StatusBar from '$lib/components/StatusBar.svelte';
 	import { AppShell } from '@skeletonlabs/skeleton';
+	import { setContext } from 'svelte';
 
 	let { children } = $props();
 
@@ -14,6 +15,21 @@
 	let configurationTitle = $state('Configuration');
 	let hasConfigContent = $state(false);
 	let configContent = $state<any>(null);
+	
+	// Create layout context for child components to access
+	const layoutContext = {
+		get configurationTitle() { return configurationTitle; },
+		set configurationTitle(value: string) { configurationTitle = value; },
+		
+		get hasConfigContent() { return hasConfigContent; },
+		set hasConfigContent(value: boolean) { hasConfigContent = value; },
+		
+		get configContent() { return configContent; },
+		set configContent(value: any) { configContent = value; }
+	};
+	
+	// Expose layout context to child components
+	setContext('layout', layoutContext);
 </script>
 
 <AppShell slotSidebarLeft={leftSidebarExpanded ? 'w-64' : 'w-16'} slotHeader="bg-surface-100-800-token">
@@ -28,11 +44,7 @@
 			</div>
 
 			<!-- Right Configuration Panel -->
-			<RightPanel title={configurationTitle} hasContent={hasConfigContent}>
-				{#if configContent}
-					{configContent}
-				{/if}
-			</RightPanel>
+			<RightPanel title={configurationTitle} hasContent={hasConfigContent} children={configContent} />
 		</main>
 
 		<!-- Status Bar -->
