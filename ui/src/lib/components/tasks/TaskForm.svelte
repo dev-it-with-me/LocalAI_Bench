@@ -16,6 +16,7 @@
     formCategoryId,
     formInputData,
     formExpectedOutput,
+    formStatus,
     categories,
     isSaving,
     onSaveTask,
@@ -27,6 +28,7 @@
     formCategoryId: string;
     formInputData: Record<string, any>;
     formExpectedOutput: string | null;
+    formStatus: TaskStatusEnum;
     categories: Category[];
     isSaving: boolean;
     onSaveTask: (taskData: TaskCreateRequest | TaskUpdateRequest) => void;
@@ -49,6 +51,13 @@
       uploadedImages = [...selectedTask.input_data.image];
     }
   });
+
+  // Status definitions with colors and labels for UI
+  const statusOptions = [
+    { value: TaskStatusEnum.DRAFT, label: 'Draft', color: 'bg-amber-500' },
+    { value: TaskStatusEnum.READY, label: 'Ready', color: 'bg-green-500' },
+    { value: TaskStatusEnum.ARCHIVED, label: 'Archived', color: 'bg-gray-500' }
+  ];
 
   function handleInputDataChange(value: string): void {
     try {
@@ -104,6 +113,7 @@
         name: formName,
         description: formDescription,
         category_id: formCategoryId,
+        status: formStatus,
         input_data: {
           user_instruction: formInputData.user_instruction || '',
           system_prompt: formInputData.system_prompt || null,
@@ -122,6 +132,7 @@
         name: formName,
         description: formDescription,
         category_id: formCategoryId,
+        status: formStatus,
         input_data: {
           user_instruction: formInputData.user_instruction || '',
           system_prompt: formInputData.system_prompt || null,
@@ -169,19 +180,34 @@
     ></textarea>
   </div>
   
-  <div>
-    <label for="category" class="block text-sm font-medium text-surface-200 mb-1">Category</label>
-    <select
-      id="category"
-      bind:value={formCategoryId}
-      class="w-full px-3 py-2 bg-surface-700 border border-surface-600 rounded-md text-white focus:ring-primary-500 focus:border-primary-500"
-      required
-    >
-      <option value="" disabled={!formCategoryId}>Select category</option>
-      {#each categories as category}
-        <option value={category.id}>{category.name}</option>
-      {/each}
-    </select>
+  <div class="flex gap-4">
+    <div class="flex-1">
+      <label for="category" class="block text-sm font-medium text-surface-200 mb-1">Category</label>
+      <select
+        id="category"
+        bind:value={formCategoryId}
+        class="w-full px-3 py-2 bg-surface-700 border border-surface-600 rounded-md text-white focus:ring-primary-500 focus:border-primary-500"
+        required
+      >
+        <option value="" disabled={!formCategoryId}>Select category</option>
+        {#each categories as category}
+          <option value={category.id}>{category.name}</option>
+        {/each}
+      </select>
+    </div>
+    
+    <div class="flex-1">
+      <label for="status" class="block text-sm font-medium text-surface-200 mb-1">Status</label>
+      <select
+        id="status"
+        bind:value={formStatus}
+        class="w-full px-3 py-2 bg-surface-700 border border-surface-600 rounded-md text-white focus:ring-primary-500 focus:border-primary-500"
+      >
+        {#each statusOptions as status}
+          <option value={status.value}>{status.label}</option>
+        {/each}
+      </select>
+    </div>
   </div>
   
   <div class="space-y-4 pt-2 border-t border-surface-700">

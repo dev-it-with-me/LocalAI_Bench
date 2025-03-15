@@ -82,7 +82,7 @@ class TaskService:
 
         # Apply category filter
         if category_id:
-            tasks = [t for t in tasks if t.category_id == category_id]
+            tasks: list[Task] = [t for t in tasks if t.category_id == category_id]
 
         # Apply status filter
         if status:
@@ -135,8 +135,8 @@ class TaskService:
         if evaluation_weights is not None:
             task.evaluation_weights = EvaluationWeights(**evaluation_weights)
         if status is not None:
-            task.status = status
-
+            task.status = TaskStatusEnum(status)
+        print(task.status)
         if self.task_repo.update(task):
             self.logger.info(f"Updated task: {task_id}")
             return task

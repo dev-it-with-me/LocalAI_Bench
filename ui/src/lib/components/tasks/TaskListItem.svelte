@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { type TaskResponse, type Category } from '$lib/services/type';
+  import { type TaskResponse, type Category, TaskStatusEnum } from '$lib/services/type';
 
   // Props
   let { task, selectedTask, categories, onSelectTask, onEditTask, onDeleteTask } = $props<{
@@ -13,18 +13,42 @@
 
   let isSelected = $derived(selectedTask?.id === task.id);
   
+  // Status styling based on task status
+  const statusStyles = {
+    [TaskStatusEnum.DRAFT]: {
+      badge: 'bg-amber-500/20 text-amber-300 border border-amber-500/30',
+      label: 'Draft'
+    },
+    [TaskStatusEnum.READY]: {
+      badge: 'bg-green-500/20 text-green-300 border border-green-500/30',
+      label: 'Ready'
+    },
+    [TaskStatusEnum.ARCHIVED]: {
+      badge: 'bg-gray-500/20 text-gray-300 border border-gray-500/30',
+      label: 'Archived'
+    }
+  };
+
+  // Get category name helper
   function getCategoryName(categoryId: string): string {
     return categories.find(c => c.id === categoryId)?.name || 'Unknown';
   }
 </script>
 
 <div 
-  class="group p-4 bg-surface-800 border border-surface-700 rounded-md cursor-pointer hover:border-primary-500 transition-colors {isSelected ? 'border-primary-500 ring-1 ring-primary-500/30' : ''}"
+  class="group p-4 bg-surface-800 border border-surface-700 rounded-md cursor-pointer hover:border-primary-500 transition-colors 
+    {isSelected ? 'border-primary-500 ring-1 ring-primary-500/30' : ''}
+    {task.status === TaskStatusEnum.ARCHIVED ? 'opacity-60' : ''}"
   onclick={() => onSelectTask(task)}
 >
   <div class="flex justify-between items-start mb-2">
     <div>
-      <h3 class="font-medium">{task.name}</h3>
+      <div class="flex items-center space-x-2 mb-1">
+        <h3 class="font-medium">{task.name}</h3>
+        <span class="px-2 py-0.5 text-xs rounded-full {statusStyles[task.status].badge}">
+          {statusStyles[task.status].label}
+        </span>
+      </div>
       <p class="text-sm text-surface-300 line-clamp-2">{task.description || 'No description'}</p>
     </div>
     <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">

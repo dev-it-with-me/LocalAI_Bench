@@ -25,7 +25,7 @@ from app.exceptions import (
     ValidationError
 )
 from app.routes import (
-    benchmark_router,
+    # benchmark_router,
     category_router,
     import_export_router,
     model_router,
@@ -231,7 +231,7 @@ async def _status() -> dict:
 app.include_router(category_router, prefix="/api")
 app.include_router(task_router, prefix="/api")
 app.include_router(model_router, prefix="/api")
-app.include_router(benchmark_router, prefix="/api")
+# app.include_router(benchmark_router, prefix="/api")
 app.include_router(import_export_router, prefix="/api")
 
 # Include static files for serving UI

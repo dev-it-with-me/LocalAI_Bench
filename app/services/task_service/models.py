@@ -36,3 +36,6 @@ class Task(BaseEntityModel[str]):
     expected_output: str | None = Field(default=None, description="Expected output")
 
     evaluation_weights: EvaluationWeights | None = Field(default=None, description="Evaluation weights for the task")
+
+    class Config:
+        use_enum_values = True

@@ -33,6 +33,9 @@ class TaskCreateRequest(BaseModel):
     evaluation_weights: None | EvaluationWeightsRequest = None
     status: TaskStatusEnum = TaskStatusEnum.DRAFT
 
+    class Config:
+        use_enum_values = True
+
 class TaskUpdateRequest(BaseModel):
     """Schema for updating an existing task."""
     name: None | str = None
@@ -42,6 +45,9 @@ class TaskUpdateRequest(BaseModel):
     expected_output: None | str = None
     evaluation_weights: None | EvaluationWeightsRequest = None
     status: None | TaskStatusEnum = None
+
+    class Config:
+        use_enum_values = True
 
 class TaskResponse(BaseModel):
     """Schema for task response."""
@@ -56,6 +62,12 @@ class TaskResponse(BaseModel):
     created_at: datetime
     updated_at: datetime
 
+    class Config:
+        use_enum_values = True
+
 class TasksResponse(BaseResponse):
     """Response schema for multiple tasks."""
     tasks: list[TaskResponse]
+
+    class Config:
+        use_enum_values = True

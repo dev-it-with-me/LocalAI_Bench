@@ -5,6 +5,7 @@
   import TaskForm from '$lib/components/tasks/TaskForm.svelte';
   import { getContext } from 'svelte';
   import type { TaskCreateRequest, TaskResponse, TaskUpdateRequest, Category } from '$lib/services/type';
+  import { TaskStatusEnum } from '$lib/services/type';
   
   // Access layout store to update right panel content
   const layout: any = getContext('layout');
@@ -19,6 +20,16 @@
   
   // Filter state
   let filterCategory = $state<string>('all');
+  let filterStatus = $state<TaskStatusEnum | 'all'>('all');
+  let searchQuery = $state<string>('');
+  
+  // Status options for filtering
+  const statusOptions = [
+    { value: 'all', label: 'All Statuses' },
+    { value: TaskStatusEnum.DRAFT, label: 'Draft' },
+    { value: TaskStatusEnum.READY, label: 'Ready' },
+    { value: TaskStatusEnum.ARCHIVED, label: 'Archived' }
+  ];
 
   // Form state
   let editMode = $state(false);
@@ -27,14 +38,35 @@
   let formCategoryId = $state('');
   let formInputData = $state<Record<string, any>>({});
   let formExpectedOutput = $state<string | null>(null);
+  let formStatus = $state<TaskStatusEnum>(TaskStatusEnum.DRAFT);
 
   // Derived state
   let hasTasks = $derived(tasks.length > 0);
-  let filteredTasks = $derived(
-    filterCategory === 'all' 
-      ? tasks 
-      : tasks.filter(task => task.category_id === filterCategory)
-  );
+  
+  let filteredTasks = $derived(() => {
+    let filtered = [...tasks];
+    
+    // Apply category filter
+    if (filterCategory !== 'all') {
+      filtered = filtered.filter(task => task.category_id === filterCategory);
+    }
+    
+    // Apply status filter
+    if (filterStatus !== 'all') {
+      filtered = filtered.filter(task => task.status === filterStatus);
+    }
+    
+    // Apply search query filter
+    if (searchQuery.trim() !== '') {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(task => 
+        task.name.toLowerCase().includes(query) || 
+        (task.description && task.description.toLowerCase().includes(query))
+      );
+    }
+    
+    return filtered;
+  });
 
   // Update the right panel content whenever selection or edit mode changes
   $effect(() => {
@@ -57,6 +89,7 @@
           formCategoryId,
           formInputData,
           formExpectedOutput,
+          formStatus,
           categories,
           isSaving,
           onSaveTask: handleSaveTask,
@@ -109,8 +142,9 @@
     formName = '';
     formDescription = '';
     formCategoryId = categories.length > 0 ? categories[0].id : '';
-    formInputData = {};
+    formInputData = { user_instruction: '', system_prompt: null };
     formExpectedOutput = null;
+    formStatus = TaskStatusEnum.DRAFT;
   }
 
   function selectTask(task: TaskResponse) {
@@ -132,6 +166,7 @@
     formCategoryId = task.category_id;
     formInputData = { ...task.input_data };
     formExpectedOutput = task.expected_output;
+    formStatus = task.status;
   }
   
   async function deleteTask(taskId: string) {
@@ -149,6 +184,12 @@
     } catch (e) {
       alert(e instanceof Error ? e.message : 'Failed to delete task');
     }
+  }
+
+  function clearFilters() {
+    filterCategory = 'all';
+    filterStatus = 'all';
+    searchQuery = '';
   }
 
   async function handleSaveTask(taskData: TaskCreateRequest | TaskUpdateRequest) {
@@ -177,6 +218,9 @@
       resetForm();
     }
   }
+
+  // Computed property to track if no results after filtering
+  let noFilterResults = $derived(tasks.length > 0 && filteredTasks().length === 0);
 </script>
 
 <div class="space-y-6">
@@ -194,22 +238,65 @@
     </button>
   </div>
   
-  <!-- Filters -->
-  <div class="flex space-x-2">
-    <button 
-      class="px-3 py-1.5 rounded-md text-sm {filterCategory === 'all' ? 'bg-primary-500 text-white' : 'bg-surface-700 text-surface-200 hover:bg-surface-600'}"
-      onclick={() => filterCategory = 'all'}
-    >
-      All Tasks
-    </button>
-    {#each categories as category}
-      <button 
-        class="px-3 py-1.5 rounded-md text-sm {filterCategory === category.id ? 'bg-primary-500 text-white' : 'bg-surface-700 text-surface-200 hover:bg-surface-600'}"
-        onclick={() => filterCategory = category.id}
-      >
-        {category.name}
-      </button>
-    {/each}
+  <!-- Search and Filter Bar -->
+  <div class="flex flex-col gap-3">
+    <div class="relative">
+      <input
+        type="text"
+        bind:value={searchQuery}
+        placeholder="Search tasks..."
+        class="w-full px-3 py-2 pl-10 bg-surface-700 border border-surface-600 rounded-md text-white focus:ring-primary-500 focus:border-primary-500"
+      />
+      <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 -translate-y-1/2 text-surface-400">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+    </div>
+    
+    <div class="flex gap-3 flex-col">
+      <!-- Category filters -->
+      <div class="flex flex-wrap gap-1">
+        <button 
+          class="px-3 py-1.5 rounded-md text-sm {filterCategory === 'all' ? 'bg-primary-500 text-white' : 'bg-surface-700 text-surface-200 hover:bg-surface-600'}"
+          onclick={() => filterCategory = 'all'}
+        >
+          All Categories
+        </button>
+        {#each categories as category}
+          <button 
+            class="px-3 py-1.5 rounded-md text-sm {filterCategory === category.id ? 'bg-primary-500 text-white' : 'bg-surface-700 text-surface-200 hover:bg-surface-600'}"
+            onclick={() => filterCategory = category.id}
+          >
+            {category.name}
+          </button>
+        {/each}
+      </div>
+      <!-- Status filters -->
+      <div class="flex flex-wrap gap-1">
+        {#each statusOptions as status}
+          <button 
+            class="px-3 py-1.5 rounded-md text-sm {filterStatus === status.value ? 'bg-primary-500 text-white' : 'bg-surface-700 text-surface-200 hover:bg-surface-600'}"
+            onclick={() => filterStatus = status.value as any}
+          >
+            {status.label}
+          </button>
+        {/each}
+      </div>
+    </div>
+    
+    {#if searchQuery || filterCategory !== 'all' || filterStatus !== 'all'}
+      <div class="flex justify-between items-center">
+        <span class="text-sm text-surface-300">
+          Found {filteredTasks.length} {filteredTasks.length === 1 ? 'task' : 'tasks'}
+        </span>
+        <button
+          onclick={clearFilters}
+          class="text-sm text-primary-400 hover:text-primary-300"
+        >
+          Clear filters
+        </button>
+      </div>
+    {/if}
   </div>
   
   {#if isLoading}
@@ -245,14 +332,25 @@
         Create First Task
       </button>
     </div>
-  {:else if filteredTasks.length === 0}
+  {:else if noFilterResults}
     <div class="bg-surface-800 border border-surface-700 rounded-md p-6 text-center">
-      <p class="text-surface-400">No tasks found in this category</p>
+      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="mx-auto text-surface-400 mb-4">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      <h3 class="text-lg font-semibold mb-2">No Matching Tasks</h3>
+      <p class="text-surface-400 mb-4">No tasks match your current filters</p>
+      <button 
+        onclick={clearFilters}
+        class="px-4 py-2 bg-primary-500 hover:bg-primary-600 text-white rounded-md"
+      >
+        Clear Filters
+      </button>
     </div>
   {:else}
     <div class="w-full">
       <TaskList
-        tasks={filteredTasks}
+        tasks={filteredTasks()}
         {selectedTask}
         {categories}
         onSelectTask={selectTask}

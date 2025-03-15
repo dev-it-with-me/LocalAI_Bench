@@ -8,10 +8,7 @@
 export enum TaskStatusEnum {
   DRAFT = "draft",
   READY = "ready",
-  RUNNING = "running",
-  COMPLETED = "completed",
-  FAILED = "failed",
-  ERROR = "error"
+  ARCHIVED = "archived",
 }
 
 

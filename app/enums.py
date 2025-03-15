@@ -11,10 +11,7 @@ class TaskStatusEnum(Enum):
     """Status of a benchmark task."""
     DRAFT = "draft"
     READY = "ready" 
-    RUNNING = "running"
-    COMPLETED = "completed"
-    FAILED = "failed"
-    ERROR = "error"
+    ARCHIVED = "archived"
 
 
 

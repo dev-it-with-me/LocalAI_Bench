@@ -135,7 +135,7 @@ class JsonFileHandler(Generic[T]):
         try:
             # Convert Pydantic model to dict if necessary
             if hasattr(data, "model_dump"):
-                data_dict = data.model_dump()
+                data_dict = data.model_dump(mode="json")
             else:
                 data_dict = data
             

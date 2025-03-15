@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { type TaskResponse, type Category, type ImageInputData } from '$lib/services/type';
+  import { type TaskResponse, type Category, type ImageInputData, TaskStatusEnum } from '$lib/services/type';
 
   // Props
   let {
@@ -22,14 +22,33 @@
     selectedTask?.input_data?.image && 
     selectedTask.input_data.image.length > 0
   );
+
+  // Status styling based on task status
+  const statusStyles = {
+    [TaskStatusEnum.DRAFT]: {
+      badge: 'bg-amber-500/20 text-amber-300 border border-amber-500/30',
+      label: 'Draft'
+    },
+    [TaskStatusEnum.READY]: {
+      badge: 'bg-green-500/20 text-green-300 border border-green-500/30',
+      label: 'Ready'
+    },
+    [TaskStatusEnum.ARCHIVED]: {
+      badge: 'bg-gray-500/20 text-gray-300 border border-gray-500/30',
+      label: 'Archived'
+    }
+  };
 </script>
 
 <div class="space-y-4">
   {#if selectedTask}
     <div>
-      <div class="flex items-center mb-2">
-        <span class="px-2 py-0.5 bg-surface-700 rounded text-xs font-medium mr-2">
+      <div class="flex items-center mb-2 gap-2">
+        <span class="px-2 py-0.5 bg-surface-700 rounded text-xs font-medium">
           {getCategoryName(selectedTask.category_id)}
+        </span>
+        <span class="px-2 py-0.5 text-xs rounded-full {statusStyles[selectedTask.status].badge}">
+          {statusStyles[selectedTask.status].label}
         </span>
       </div>
       <h3 class="text-lg font-semibold mb-2">{selectedTask.name}</h3>
@@ -77,19 +96,19 @@
     </div>
     
     {#if selectedTask.evaluation_weights}
-      <div class="pt-2 border-t border-surface-700">
-        <div class="flex justify-between items-center mb-2">
-          <span class="text-surface-300">Complexity</span>
-          <span class="font-medium">{selectedTask.evaluation_weights.complexity}</span>
-        </div>
-        <div class="h-2 bg-surface-700 rounded-full overflow-hidden">
-          <div class="bg-primary-500 h-full" style="width: {Math.min(selectedTask.evaluation_weights.complexity * 25, 100)}%"></div>
-        </div>
-      </div>
     
       <div class="pt-2 border-t border-surface-700">
         <h4 class="font-medium mb-2">Scoring Weights</h4>
         <div class="grid grid-cols-2 gap-4">
+          <div>
+            <span class="text-sm text-surface-300">Complexity</span>
+            <div class="flex items-center">
+              <div class="h-2 flex-1 bg-surface-700 rounded-full overflow-hidden">
+                <div class="bg-purple-500 h-full" style="width: {Math.min(selectedTask.evaluation_weights.complexity * 25, 100)}%"></div>
+              </div>
+              <span class="ml-2 text-sm min-w-[2rem] text-center">{selectedTask.evaluation_weights.complexity}</span>
+            </div>
+          </div>
           <div>
             <span class="text-sm text-surface-300">Accuracy</span>
             <div class="flex items-center">
