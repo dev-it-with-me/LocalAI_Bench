@@ -7,7 +7,6 @@ from app.services.category_service.service import CategoryService
 from app.services.import_export_service.service import ImportExportService
 from app.services.model_service.service import ModelService
 from app.services.task_service.service import TaskService
-from app.services.template_service.service import TemplateService
 
 __all__ = [
     "BenchmarkService",
@@ -15,5 +14,4 @@ __all__ = [
     "ImportExportService",
     "ModelService",
     "TaskService",
-    "TemplateService",
 ]

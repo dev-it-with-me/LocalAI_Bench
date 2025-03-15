@@ -4,47 +4,18 @@
   import TaskDetails from '$lib/components/tasks/TaskDetails.svelte';
   import TaskForm from '$lib/components/tasks/TaskForm.svelte';
   import { getContext } from 'svelte';
+  import type { TaskCreateRequest, TaskResponse, TaskUpdateRequest, Category, Template } from '$lib/services/type';
   
   // Access layout store to update right panel content
   const layout: any = getContext('layout');
-  
-  type Category = {
-    id: string;
-    name: string;
-  };
-  
-  type Template = {
-    id: string;
-    name: string;
-    description: string;
-    input_schema: Record<string, any>;
-    output_schema: Record<string, any>;
-  };
-  
-  type Task = {
-    id: string;
-    name: string;
-    description: string;
-    category_id: string;
-    template_id: string;
-    input_data: Record<string, any>;
-    expected_output: Record<string, any>;
-    complexity: number;
-    created_at: string;
-    updated_at: string;
-    accuracy_weight: number;
-    latency_weight: number;
-    throughput_weight: number;
-    cost_weight: number;
-  };
 
   // State management
-  let tasks = $state<Task[]>([]);
+  let tasks = $state<TaskResponse[]>([]);
   let categories = $state<Category[]>([]);
   let templates = $state<Template[]>([]);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
-  let selectedTask = $state<Task | null>(null);
+  let selectedTask = $state<TaskResponse | null>(null);
   let selectedTemplate = $state<Template | null>(null);
   let isSaving = $state(false);
   
@@ -58,12 +29,7 @@
   let formCategoryId = $state('');
   let formTemplateId = $state('');
   let formInputData = $state<Record<string, any>>({});
-  let formExpectedOutput = $state<Record<string, any>>({});
-  let formComplexity = $state(1);
-  let formAccuracyWeight = $state(1);
-  let formLatencyWeight = $state(1);
-  let formThroughputWeight = $state(1);
-  let formCostWeight = $state(1);
+  let formExpectedOutput = $state<string | null>(null);
 
   // Derived state
   let hasTasks = $derived(tasks.length > 0);
@@ -95,11 +61,6 @@
           formTemplateId,
           formInputData,
           formExpectedOutput,
-          formComplexity,
-          formAccuracyWeight,
-          formLatencyWeight,
-          formThroughputWeight,
-          formCostWeight,
           categories,
           templates,
           selectedTemplate,
@@ -161,16 +122,11 @@
     formCategoryId = categories.length > 0 ? categories[0].id : '';
     formTemplateId = '';
     formInputData = {};
-    formExpectedOutput = {};
-    formComplexity = 1;
-    formAccuracyWeight = 1;
-    formLatencyWeight = 1;
-    formThroughputWeight = 1;
-    formCostWeight = 1;
+    formExpectedOutput = null;
     selectedTemplate = null;
   }
 
-  function selectTask(task: Task) {
+  function selectTask(task: TaskResponse) {
     selectedTask = task;
     editMode = false;
   }
@@ -181,7 +137,7 @@
     resetForm();
   }
   
-  function editTask(task: Task) {
+  function editTask(task: TaskResponse) {
     editMode = true;
     selectedTask = task;
     formName = task.name;
@@ -189,12 +145,7 @@
     formCategoryId = task.category_id;
     formTemplateId = task.template_id;
     formInputData = { ...task.input_data };
-    formExpectedOutput = { ...task.expected_output };
-    formComplexity = task.complexity;
-    formAccuracyWeight = task.accuracy_weight;
-    formLatencyWeight = task.latency_weight;
-    formThroughputWeight = task.throughput_weight;
-    formCostWeight = task.cost_weight;
+    formExpectedOutput = task.expected_output;
     selectedTemplate = templates.find(t => t.id === task.template_id) || null;
   }
   
@@ -219,18 +170,18 @@
     formTemplateId = templateId;
     selectedTemplate = templates.find(t => t.id === templateId) || null;
     formInputData = {};
-    formExpectedOutput = {};
+    formExpectedOutput = null;
   }
 
-  async function handleSaveTask(taskData: any) {
+  async function handleSaveTask(taskData: TaskCreateRequest | TaskUpdateRequest) {
     isSaving = true;
     try {
       if (selectedTask?.id) {
-        const updated = await updateTask(selectedTask.id, taskData);
+        const updated = await updateTask(selectedTask.id, taskData as TaskUpdateRequest);
         tasks = tasks.map(t => t.id === selectedTask.id ? updated : t);
         selectedTask = updated;
       } else {
-        const created = await createTask(taskData);
+        const created = await createTask(taskData as TaskCreateRequest);
         tasks = [...tasks, created];
         selectedTask = created;
       }
@@ -329,7 +280,7 @@
         {templates}
         onSelectTask={selectTask}
         onEditTask={editTask}
-        {deleteTask}
+        onDeleteTask={deleteTask}
       />
     </div>
   {/if}

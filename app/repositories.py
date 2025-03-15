@@ -8,7 +8,7 @@ Service-specific repositories should import this class and extend it.
 from typing import Generic, Protocol, Type, TypeVar, cast
 from pydantic import BaseModel
 from app.utils import JsonFileHandler, get_logger
-
+from pathlib import Path
 # Type variable for generic repository, constrained to BaseModel
 T = TypeVar("T", bound=BaseModel)
 
@@ -21,14 +21,14 @@ class EntityProtocol(Protocol):
 class BaseRepository(Generic[T]):
     """Base repository class for entity operations."""
 
-    def __init__(self, directory: str, model_cls: Type[T]):
+    def __init__(self, directory: Path, model_cls: Type[T]):
         """Initialize the repository.
         
         Args:
             directory: Directory where entity files are stored
             model_cls: Pydantic model class for the entity
         """
-        self.handler = JsonFileHandler(directory, model_cls)
+        self.handler = JsonFileHandler(directory=directory, model_cls=model_cls)
         self.model_cls = model_cls
         self.logger = get_logger(f"Repository:{model_cls.__name__}")
         

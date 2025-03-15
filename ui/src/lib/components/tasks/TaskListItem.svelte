@@ -1,20 +1,14 @@
 <script lang="ts">
+  import { type TaskResponse, type Category, type Template } from '$lib/services/type';
+
   // Props
   let { task, selectedTask, categories, templates, onSelectTask, onEditTask, onDeleteTask } = $props<{
-    task: {
-      id: string;
-      name: string;
-      description: string;
-      category_id: string;
-      template_id: string;
-      created_at: string;
-      updated_at: string;
-    };
-    selectedTask: any;
-    categories: any[];
-    templates: any[];
-    onSelectTask: (task: any) => void;
-    onEditTask: (task: any) => void;
+    task: TaskResponse;
+    selectedTask: TaskResponse | null;
+    categories: Category[];
+    templates: Template[];
+    onSelectTask: (task: TaskResponse) => void;
+    onEditTask: (task: TaskResponse) => void;
     onDeleteTask: (taskId: string) => void;
   }>();
 

@@ -26,16 +26,13 @@ class EvaluationWeights(BaseModel):
     latency: float = Field(default=1.0, description="Latency weight")
     cost_memory_usage: float = Field(default=1.0, description="Cost/Memory usage weight")
 
-
 class Task(BaseEntityModel[str]):
     """Model for benchmark tasks."""
     name: str = Field(default=..., description="Task name")
-    template_id: str | None = Field(default=None, description="ID of the task template")
     description: str = Field(default="", description="Task description")
     status: TaskStatusEnum = Field(default=TaskStatusEnum.DRAFT, description="Task status")
     category_id: str = Field(default=..., description="ID of the task category")
     input_data: InputData = Field(default=..., description="Task input data")
     expected_output: str | None = Field(default=None, description="Expected output")
-    
-    # Custom weights for this specific task (overrides template defaults)
+
     evaluation_weights: EvaluationWeights | None = Field(default=None, description="Evaluation weights for the task")

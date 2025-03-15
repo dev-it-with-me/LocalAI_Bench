@@ -41,14 +41,14 @@ def get_logger(name: str) -> logging.Logger:
 class JsonFileHandler(Generic[T]):
     """Handler for reading and writing JSON files with versioning support."""
     
-    def __init__(self, directory: str, model_cls: Type[T] | None = None):
+    def __init__(self, directory: Path, model_cls: Type[T] | None = None):
         """Initialize the JSON file handler.
         
         Args:
             directory: The directory where JSON files will be stored
             model_cls: Optional Pydantic model class for parsing JSON data
         """
-        self.directory = directory
+        self.directory: Path = directory
         self.model_cls = model_cls
         self.logger = get_logger(f"JsonFileHandler:{Path(directory).name}")
         

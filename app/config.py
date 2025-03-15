@@ -28,7 +28,6 @@ class AppSettings(BaseSettings):
     # Data storage settings
     CATEGORIES_DIR: Path = DATA_DIR / "categories"
     TASKS_DIR: Path = DATA_DIR / "tasks"
-    TEMPLATES_DIR: Path = DATA_DIR / "templates"
     MODELS_DIR: Path = DATA_DIR / "models"
     RESULTS_DIR: Path = DATA_DIR / "results"
     IMAGES_DIR: Path = DATA_DIR / "images"
@@ -66,14 +65,13 @@ class AppSettings(BaseSettings):
         return {
             "categories": self.CATEGORIES_DIR,
             "tasks": self.TASKS_DIR,
-            "templates": self.TEMPLATES_DIR,
             "models": self.MODELS_DIR,
             "results": self.RESULTS_DIR,
             "images": self.IMAGES_DIR,
         }
 
     @field_validator("DATA_DIR", "LOG_DIR", "CATEGORIES_DIR", "TASKS_DIR", 
-                    "TEMPLATES_DIR", "MODELS_DIR", "RESULTS_DIR", "IMAGES_DIR")
+                    "MODELS_DIR", "RESULTS_DIR", "IMAGES_DIR")
     def validate_dir_exists(cls, path_str: str) -> str:
         """Validate that directories exist and create them if they don't."""
         path = Path(path_str)

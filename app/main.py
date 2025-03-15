@@ -30,7 +30,6 @@ from app.routes import (
     import_export_router,
     model_router,
     task_router,
-    template_router
 )
 from app.schemas import ErrorResponse
 from app.utils import get_logger
@@ -198,7 +197,6 @@ async def lifespan(app: FastAPI):
     os.makedirs(settings.STATIC_DIR, exist_ok=True)
     os.makedirs(settings.CATEGORIES_DIR, exist_ok=True)
     os.makedirs(settings.TASKS_DIR, exist_ok=True)
-    os.makedirs(settings.TEMPLATES_DIR, exist_ok=True)
     os.makedirs(settings.MODELS_DIR, exist_ok=True)
     os.makedirs(settings.RESULTS_DIR, exist_ok=True)
     os.makedirs(settings.LOG_DIR, exist_ok=True)
@@ -231,7 +229,6 @@ async def _status() -> dict:
 
 # Include API routers
 app.include_router(category_router, prefix="/api")
-app.include_router(template_router, prefix="/api")
 app.include_router(task_router, prefix="/api")
 app.include_router(model_router, prefix="/api")
 app.include_router(benchmark_router, prefix="/api")

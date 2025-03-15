@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { type TaskResponse, type Category, type Template, type ImageInputData } from '$lib/services/type';
+
   // Props
   let {
     selectedTask,
@@ -8,11 +10,11 @@
     onEditTask,
     onDeleteTask
   } = $props<{
-    selectedTask: any;
-    selectedTemplate: any;
-    categories: any[];
-    templates: any[];
-    onEditTask: (task: any) => void;
+    selectedTask: TaskResponse;
+    selectedTemplate: Template | null;
+    categories: Category[];
+    templates: Template[];
+    onEditTask: (task: TaskResponse) => void;
     onDeleteTask: (taskId: string) => void;
   }>();
   
@@ -23,6 +25,11 @@
   function getTemplateName(templateId: string): string {
     return templates.find(t => t.id === templateId)?.name || 'Unknown';
   }
+
+  let hasImages = $derived(
+    selectedTask?.input_data?.image && 
+    selectedTask.input_data.image.length > 0
+  );
 </script>
 
 <div class="space-y-4">
@@ -42,65 +49,88 @@
     
     <div class="pt-2 border-t border-surface-700">
       <h4 class="font-medium mb-2">Task Input</h4>
-      <pre class="bg-surface-800 p-3 rounded-md text-sm overflow-x-auto">{JSON.stringify(selectedTask.input_data, null, 2)}</pre>
+      <div class="space-y-3">
+        <div>
+          <span class="text-sm text-surface-300">User Instruction:</span>
+          <pre class="bg-surface-800 p-3 rounded-md text-sm overflow-x-auto mt-1">{selectedTask.input_data.user_instruction}</pre>
+        </div>
+        
+        {#if selectedTask.input_data.system_prompt}
+          <div>
+            <span class="text-sm text-surface-300">System Prompt:</span>
+            <pre class="bg-surface-800 p-3 rounded-md text-sm overflow-x-auto mt-1">{selectedTask.input_data.system_prompt}</pre>
+          </div>
+        {/if}
+        
+        {#if hasImages}
+          <div>
+            <span class="text-sm text-surface-300">Images:</span>
+            <div class="grid grid-cols-3 gap-2 mt-2">
+              {#each selectedTask.input_data.image as image}
+                <div class="bg-surface-800 p-2 rounded-md">
+                  <img 
+                    src={image.filepath} 
+                    alt={image.filename} 
+                    class="h-24 w-full object-cover rounded-md"
+                  />
+                  <span class="text-xs text-surface-300 truncate block mt-1">{image.filename}</span>
+                </div>
+              {/each}
+            </div>
+          </div>
+        {/if}
+      </div>
     </div>
     
     <div class="pt-2 border-t border-surface-700">
       <h4 class="font-medium mb-2">Expected Output</h4>
-      <pre class="bg-surface-800 p-3 rounded-md text-sm overflow-x-auto">{JSON.stringify(selectedTask.expected_output, null, 2)}</pre>
+      <pre class="bg-surface-800 p-3 rounded-md text-sm overflow-x-auto">{selectedTask.expected_output || 'No expected output defined'}</pre>
     </div>
     
-    <div class="pt-2 border-t border-surface-700">
-      <div class="flex justify-between items-center mb-2">
-        <span class="text-surface-300">Complexity</span>
-        <span class="font-medium">{selectedTask.complexity}</span>
+    {#if selectedTask.evaluation_weights}
+      <div class="pt-2 border-t border-surface-700">
+        <div class="flex justify-between items-center mb-2">
+          <span class="text-surface-300">Complexity</span>
+          <span class="font-medium">{selectedTask.evaluation_weights.complexity}</span>
+        </div>
+        <div class="h-2 bg-surface-700 rounded-full overflow-hidden">
+          <div class="bg-primary-500 h-full" style="width: {Math.min(selectedTask.evaluation_weights.complexity * 25, 100)}%"></div>
+        </div>
       </div>
-      <div class="h-2 bg-surface-700 rounded-full overflow-hidden">
-        <div class="bg-primary-500 h-full" style="width: {Math.min(selectedTask.complexity * 25, 100)}%"></div>
-      </div>
-    </div>
     
-    <div class="pt-2 border-t border-surface-700">
-      <h4 class="font-medium mb-2">Scoring Weights</h4>
-      <div class="grid grid-cols-2 gap-4">
-        <div>
-          <span class="text-sm text-surface-300">Accuracy</span>
-          <div class="flex items-center">
-            <div class="h-2 flex-1 bg-surface-700 rounded-full overflow-hidden">
-              <div class="bg-green-500 h-full" style="width: {Math.min(selectedTask.accuracy_weight * 25, 100)}%"></div>
+      <div class="pt-2 border-t border-surface-700">
+        <h4 class="font-medium mb-2">Scoring Weights</h4>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <span class="text-sm text-surface-300">Accuracy</span>
+            <div class="flex items-center">
+              <div class="h-2 flex-1 bg-surface-700 rounded-full overflow-hidden">
+                <div class="bg-green-500 h-full" style="width: {Math.min(selectedTask.evaluation_weights.accuracy * 25, 100)}%"></div>
+              </div>
+              <span class="ml-2 text-sm min-w-[2rem] text-center">{selectedTask.evaluation_weights.accuracy}</span>
             </div>
-            <span class="ml-2 text-sm min-w-[2rem] text-center">{selectedTask.accuracy_weight}</span>
           </div>
-        </div>
-        <div>
-          <span class="text-sm text-surface-300">Latency</span>
-          <div class="flex items-center">
-            <div class="h-2 flex-1 bg-surface-700 rounded-full overflow-hidden">
-              <div class="bg-blue-500 h-full" style="width: {Math.min(selectedTask.latency_weight * 25, 100)}%"></div>
+          <div>
+            <span class="text-sm text-surface-300">Latency</span>
+            <div class="flex items-center">
+              <div class="h-2 flex-1 bg-surface-700 rounded-full overflow-hidden">
+                <div class="bg-blue-500 h-full" style="width: {Math.min(selectedTask.evaluation_weights.latency * 25, 100)}%"></div>
+              </div>
+              <span class="ml-2 text-sm min-w-[2rem] text-center">{selectedTask.evaluation_weights.latency}</span>
             </div>
-            <span class="ml-2 text-sm min-w-[2rem] text-center">{selectedTask.latency_weight}</span>
           </div>
-        </div>
-        <div>
-          <span class="text-sm text-surface-300">Throughput</span>
-          <div class="flex items-center">
-            <div class="h-2 flex-1 bg-surface-700 rounded-full overflow-hidden">
-              <div class="bg-yellow-500 h-full" style="width: {Math.min(selectedTask.throughput_weight * 25, 100)}%"></div>
+          <div>
+            <span class="text-sm text-surface-300">Cost/Memory Usage</span>
+            <div class="flex items-center">
+              <div class="h-2 flex-1 bg-surface-700 rounded-full overflow-hidden">
+                <div class="bg-red-500 h-full" style="width: {Math.min(selectedTask.evaluation_weights.cost_memory_usage * 25, 100)}%"></div>
+              </div>
+              <span class="ml-2 text-sm min-w-[2rem] text-center">{selectedTask.evaluation_weights.cost_memory_usage}</span>
             </div>
-            <span class="ml-2 text-sm min-w-[2rem] text-center">{selectedTask.throughput_weight}</span>
-          </div>
-        </div>
-        <div>
-          <span class="text-sm text-surface-300">Cost</span>
-          <div class="flex items-center">
-            <div class="h-2 flex-1 bg-surface-700 rounded-full overflow-hidden">
-              <div class="bg-red-500 h-full" style="width: {Math.min(selectedTask.cost_weight * 25, 100)}%"></div>
-            </div>
-            <span class="ml-2 text-sm min-w-[2rem] text-center">{selectedTask.cost_weight}</span>
           </div>
         </div>
       </div>
-    </div>
+    {/if}
     
     <div class="pt-4 border-t border-surface-700">
       <div class="flex justify-between text-sm text-surface-400">

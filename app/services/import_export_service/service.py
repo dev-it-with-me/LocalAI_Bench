@@ -9,7 +9,6 @@ from app.exceptions import ImportConflictError
 from app.services.category_service.repositories import CategoryRepository
 from app.services.model_service.repositories import ModelRepository
 from app.services.task_service.repositories import TaskRepository
-from app.services.template_service.repositories import TemplateRepository
 
 class ImportExportService:
     """Service for import/export operations."""
@@ -19,7 +18,6 @@ class ImportExportService:
         self.category_repository = CategoryRepository()
         self.model_repository = ModelRepository()
         self.task_repository = TaskRepository()
-        self.template_repository = TemplateRepository()
 
     async def export_data(
         self, export_type: ImportExportTypeEnum, entity_ids: list[str]
@@ -104,6 +102,5 @@ class ImportExportService:
             ImportExportTypeEnum.CATEGORY: self.category_repository,
             ImportExportTypeEnum.MODEL: self.model_repository,
             ImportExportTypeEnum.TASK_SET: self.task_repository,
-            ImportExportTypeEnum.TEMPLATE: self.template_repository,
         }
         return repositories[type]

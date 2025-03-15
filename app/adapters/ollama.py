@@ -1,210 +1,166 @@
-"""
-Ollama model adapter for LocalAI Bench.
-
-This module provides an adapter for interacting with models from Ollama API.
-"""
-
+# OllamaAdapter (Subclass)
 import asyncio
-from typing import Any, AsyncIterator, cast
-import json
+from typing import Any, AsyncIterator
 
-import ollama
-from ollama.client import AsyncClient
+from pydantic import BaseModel, Field
 
-from app.adapters.base import ModelAdapter, ModelAdapterFactory
+from app.adapters.base import ModelAdapter, ModelAdapterFactory  # Import corrected base class
 from app.config import settings
 from app.enums import ModelTypeEnum
 from app.exceptions import ModelAdapterError
-from app.models import ModelModel
+from app.services.model_service.models import Model
+from ollama import AsyncClient
+
+
+class OllamaParams(BaseModel):
+    """
+    Parameters for Ollama API calls.
+    """
+
+    temperature: float | None = Field(None, description="The temperature of the model.")
+    top_p: float | None = Field(None, description="Top-p (nucleus) sampling.")
+    top_k: int | None = Field(None, description="Top-k sampling.")
+    max_tokens: int | None = Field(None, alias="num_predict", description="Maximum number of tokens to generate.")
+    stop_sequences: list[str] | None = Field(None, alias="stop", description="Sequences at which to stop generation.")
+    extra_params: dict[str, Any] = Field(default_factory=dict, description="Additional, non-standard parameters.")
 
 
 class OllamaAdapter(ModelAdapter[str]):
     """Adapter for Ollama models."""
-    
-    def __init__(self, model_config: ModelModel):
+
+    def __init__(self, model_config: Model):
         """Initialize the Ollama adapter."""
         super().__init__(model_config)
         self.client: AsyncClient | None = None
         self.ollama_host = settings.OLLAMA_HOST
-        self.is_initialized = False
-        
+
     async def initialize(self) -> None:
         """Initialize the connection to Ollama API."""
         try:
             self.logger.info(f"Initializing connection to Ollama API at {self.ollama_host}")
-            
-            # Create async client
             self.client = AsyncClient(host=self.ollama_host)
-            
-            # Check if model exists and is ready
             self.logger.info(f"Checking if model {self.model_config.model_id} is available")
-            
-            # This will pull the model if it doesn't exist locally
             model_info = await self.client.show(model=self.model_config.model_id)
-            self.logger.info(f"Model {self.model_config.model_id} is available: {model_info.digest}")
-            
-            self.is_initialized = True
-            self.logger.info(f"Ollama adapter initialized successfully for model {self.model_config.model_id}")
-            
+            self.logger.info(f"Model {self.model_config.model_id} is available: {model_info['digest']}")
+
         except Exception as e:
             error_msg = f"Failed to initialize Ollama model {self.model_config.model_id}: {str(e)}"
             self.logger.error(error_msg)
             raise ModelAdapterError(
                 error_msg,
                 model_type=ModelTypeEnum.OLLAMA.value,
-                model_id=self.model_config.model_id
-            )
-            
+                model_id=self.model_config.model_id,
+            ) from e
+
+    async def _get_ollama_params(self, **kwargs) -> dict:
+        """
+        Consolidates and prepares parameters for Ollama API calls.
+        """
+        params = OllamaParams(**self.model_config.parameters.model_dump(), **kwargs)
+        ollama_options = params.model_dump(exclude_none=True, by_alias=True)
+        ollama_options.update(ollama_options.pop("extra_params", {}))  # Flatten extra_params
+        return ollama_options
+
     async def generate(self, prompt: str, **kwargs) -> str:
         """Generate a response from the model."""
-        if not self.is_initialized or self.client is None:
+        if self.client is None:
             raise ModelAdapterError(
                 "Ollama client not initialized. Call initialize() first.",
                 model_type=ModelTypeEnum.OLLAMA.value,
-                model_id=self.model_config.model_id
+                model_id=self.model_config.model_id,
             )
-            
+
         try:
-            # Merge parameters from model config with any overrides
-            params = self.model_config.parameters.model_dump()
-            params.update(kwargs)
-            
-            # Remove any None values and extract extra_params
-            extra_params = params.pop("extra_params", {})
-            params = {k: v for k, v in params.items() if v is not None}
-            params.update(extra_params)
-            
-            # Adapt parameters to Ollama API expectations
-            ollama_options = {}
-            if "temperature" in params:
-                ollama_options["temperature"] = params["temperature"]
-            if "top_p" in params:
-                ollama_options["top_p"] = params["top_p"]
-            if "top_k" in params:
-                ollama_options["top_k"] = params["top_k"]
-            if "max_tokens" in params:
-                ollama_options["num_predict"] = params["max_tokens"]
-            if "stop_sequences" in params:
-                ollama_options["stop"] = params["stop_sequences"]
-                
-            # Generate response
+            ollama_options = await self._get_ollama_params(**kwargs)
             response = await self.client.generate(
                 model=self.model_config.model_id,
                 prompt=prompt,
                 options=ollama_options,
-                stream=False
+                stream=False,
             )
-            
-            return response.response
-            
+            return response["response"]
+
         except Exception as e:
-            error_msg = f"Error generating response: {str(e)}"
+            error_msg = f"Error generating response for prompt '{prompt}': {str(e)}"
             self.logger.error(error_msg)
             raise ModelAdapterError(
                 error_msg,
                 model_type=ModelTypeEnum.OLLAMA.value,
-                model_id=self.model_config.model_id
-            )
-            
-    async def generate_stream(self, prompt: str, **kwargs) -> AsyncIterator[str]:
+                model_id=self.model_config.model_id,
+            ) from e
+
+    async def generate_stream(self, prompt: str, **kwargs) -> AsyncIterator[str]:  # Corrected type hint
         """Generate a streaming response from the model."""
-        if not self.is_initialized or self.client is None:
+        if self.client is None:
             raise ModelAdapterError(
                 "Ollama client not initialized. Call initialize() first.",
                 model_type=ModelTypeEnum.OLLAMA.value,
-                model_id=self.model_config.model_id
+                model_id=self.model_config.model_id,
             )
-            
+
         try:
-            # Merge parameters from model config with any overrides
-            params = self.model_config.parameters.model_dump()
-            params.update(kwargs)
-            
-            # Remove any None values and extract extra_params
-            extra_params = params.pop("extra_params", {})
-            params = {k: v for k, v in params.items() if v is not None}
-            params.update(extra_params)
-            
-            # Adapt parameters to Ollama API expectations
-            ollama_options = {}
-            if "temperature" in params:
-                ollama_options["temperature"] = params["temperature"]
-            if "top_p" in params:
-                ollama_options["top_p"] = params["top_p"]
-            if "top_k" in params:
-                ollama_options["top_k"] = params["top_k"]
-            if "max_tokens" in params:
-                ollama_options["num_predict"] = params["max_tokens"]
-            if "stop_sequences" in params:
-                ollama_options["stop"] = params["stop_sequences"]
-                
-            # Generate stream
+            ollama_options = await self._get_ollama_params(**kwargs)
             stream = await self.client.generate(
                 model=self.model_config.model_id,
                 prompt=prompt,
                 options=ollama_options,
-                stream=True
+                stream=True,
             )
-            
-            # Yield each chunk
+
             async for chunk in stream:
-                if chunk.response:
-                    yield chunk.response
-                    
+                if "response" in chunk:
+                    yield chunk["response"]
+
         except Exception as e:
-            error_msg = f"Error generating streaming response: {str(e)}"
+            error_msg = f"Error generating streaming response for prompt '{prompt}': {str(e)}"
             self.logger.error(error_msg)
             raise ModelAdapterError(
                 error_msg,
                 model_type=ModelTypeEnum.OLLAMA.value,
-                model_id=self.model_config.model_id
-            )
-            
+                model_id=self.model_config.model_id,
+            ) from e
+
     async def get_token_count(self, text: str) -> int:
         """Get the number of tokens in the text."""
-        if not self.is_initialized or self.client is None:
+        if self.client is None:
             raise ModelAdapterError(
                 "Ollama client not initialized. Call initialize() first.",
                 model_type=ModelTypeEnum.OLLAMA.value,
-                model_id=self.model_config.model_id
+                model_id=self.model_config.model_id,
             )
-            
+
         try:
-            # Use Ollama's tokenize endpoint
             response = await self.client.tokenize(model=self.model_config.model_id, prompt=text)
-            return len(response.tokens)
-            
+            return len(response["tokens"])
+
         except Exception as e:
-            error_msg = f"Error counting tokens: {str(e)}"
+            error_msg = f"Error counting tokens for text '{text}': {str(e)}"
             self.logger.error(error_msg)
             raise ModelAdapterError(
                 error_msg,
                 model_type=ModelTypeEnum.OLLAMA.value,
-                model_id=self.model_config.model_id
-            )
-            
+                model_id=self.model_config.model_id,
+            ) from e
+
     async def cleanup(self) -> None:
         """Clean up resources used by the model."""
         try:
-            # Not much to clean up for Ollama, as resources are managed by the Ollama server
-            self.client = None
-            self.is_initialized = False
+            if self.client:
+                # Assuming AsyncClient has a close method.  Check the ollama library docs.
+                # await self.client.close()
+                self.client = None
             self.logger.info(f"Cleaned up resources for Ollama model {self.model_config.model_id}")
-            
+
         except Exception as e:
             error_msg = f"Error cleaning up resources: {str(e)}"
             self.logger.error(error_msg)
             raise ModelAdapterError(
                 error_msg,
                 model_type=ModelTypeEnum.OLLAMA.value,
-                model_id=self.model_config.model_id
-            )
-            
+                model_id=self.model_config.model_id,
+            ) from e
+
     @classmethod
     def supported_model_type(cls) -> ModelTypeEnum:
         """Return the model type supported by this adapter."""
         return ModelTypeEnum.OLLAMA
-
-
-# Register the adapter with the factory
-ModelAdapterFactory.register_adapter(OllamaAdapter)

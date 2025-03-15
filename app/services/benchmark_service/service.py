@@ -7,7 +7,7 @@ import time
 from datetime import datetime
 from typing import Any
 
-from app.adapters.base import ModelAdapterFactory
+from app.adapters.base import ModelAdapter
 from app.enums import TaskStatusEnum
 from app.exceptions import BenchmarkExecutionError, ValidationError
 from app.services.benchmark_service.repositories import (
@@ -15,7 +15,6 @@ from app.services.benchmark_service.repositories import (
     TaskResultRepository,
 )
 from app.services.task_service.repositories import TaskRepository
-from app.services.template_service.repositories import TemplateRepository
 from app.services.model_service.repositories import ModelRepository
 from app.services.category_service.repositories import CategoryRepository
 
@@ -23,7 +22,6 @@ from app.utils import get_logger
 
 from app.services.model_service.models import Model
 from app.services.task_service.models import Task
-from app.services.template_service.models import Template
 from .models import BenchmarkRun, TaskResult, ScoreComponent
 
 
@@ -36,7 +34,6 @@ class BenchmarkEngine:
         self.task_repo = TaskRepository()
         self.model_repo = ModelRepository()
         self.category_repo = CategoryRepository()
-        self.template_repo = TemplateRepository()
         self.benchmark_repo = BenchmarkRunRepository()
         self.task_result_repo = TaskResultRepository()
 
@@ -126,9 +123,6 @@ class BenchmarkEngine:
         self, task: Task, model: Model, benchmark_run_id: str
     ) -> TaskResult:
         """Execute a single task on a model."""
-        template = self.template_repo.get_by_id(task.template_id)
-        if not template:
-            raise BenchmarkExecutionError(f"Template not found: {task.template_id}")
 
         # Create a new task result
         task_result = TaskResult(

@@ -130,11 +130,6 @@ class ModelNotFoundError(BaseError):
         super().__init__(f"Model not found: {model_id}")
 
 
-class TemplateNotFoundError(BaseError):
-    """Raised when a template is not found."""
-    def __init__(self, template_id: str) -> None:
-        super().__init__(f"Template not found: {template_id}")
-
 
 class ImportConflictError(BaseError):
     """Raised when there is a conflict during import."""

@@ -1,14 +1,15 @@
 <script lang="ts">
   import TaskListItem from './TaskListItem.svelte';
+  import { type TaskResponse, type Category, type Template } from '$lib/services/type';
 
   // Props
   let { tasks, selectedTask, categories, templates, onSelectTask, onEditTask, onDeleteTask } = $props<{
-    tasks: any[];
-    selectedTask: any;
-    categories: any[];
-    templates: any[];
-    onSelectTask: (task: any) => void;
-    onEditTask: (task: any) => void;
+    tasks: TaskResponse[];
+    selectedTask: TaskResponse | null;
+    categories: Category[];
+    templates: Template[];
+    onSelectTask: (task: TaskResponse) => void;
+    onEditTask: (task: TaskResponse) => void;
     onDeleteTask: (taskId: string) => void;
   }>();
 </script>
