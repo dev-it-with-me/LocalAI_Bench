@@ -161,7 +161,8 @@ class OllamaAdapter(ModelAdapter[str]):
             client = AsyncClient(host=host)
             await client.show(model=model_id)
             return True
-        except Exception:
+        except Exception as e:
+            print(e)
             return False
 
     @classmethod

@@ -12,7 +12,7 @@ from app.enums import ModelTypeEnum
 class ModelParameters(BaseModel):
     """Model for AI model parameters."""
     temperature: float | None = None
-    top_p: float | None = None
+    top_p: int | None = None
     top_k: int | None = None
     max_tokens: int | None = None
     stop_sequences: list[str] | None = None
@@ -20,6 +20,8 @@ class ModelParameters(BaseModel):
     # Additional model-specific parameters
     extra_params: dict[str, Any] = Field(default_factory=dict)
 
+    class Config:
+        use_enum_values = True
 
 class Model(BaseEntityModel[str]):
     """Model for AI models configuration."""
@@ -42,3 +44,6 @@ class Model(BaseEntityModel[str]):
     memory_required: float | None = None  # GB
     gpu_required: bool = False
     quantization: str | None = None  # e.g., "int8", "fp16"
+
+    class Config:
+        use_enum_values = True

@@ -9,12 +9,16 @@
     model?: ModelResponse;  // Optional model for editing
   }>();
 
+  // Default Ollama host
+  const DEFAULT_OLLAMA_HOST = 'http://localhost:11434';
+
   // Form state initialized with model data if editing
   let formState = $state<{
     name: string;
     description: string;
     type: ModelTypeEnum;
     model_id: string;
+    api_url: string | null;
     parameters: {
       temperature: number;
       top_p: number;
@@ -27,6 +31,7 @@
     description: props.model?.description ?? '',
     type: props.model?.type ?? ModelTypeEnum.OLLAMA,
     model_id: props.model?.model_id ?? '',
+    api_url: props.model?.api_url ?? null,
     parameters: {
       temperature: props.model?.parameters?.temperature ?? 0.7,
       top_p: props.model?.parameters?.top_p ?? 1.0,
@@ -41,6 +46,13 @@
     { value: ModelTypeEnum.OLLAMA, label: 'Ollama' }
   ];
 
+  // Effect to set default host when type is Ollama
+  $effect(() => {
+    if (formState.type === ModelTypeEnum.OLLAMA && !formState.api_url) {
+      formState.api_url = DEFAULT_OLLAMA_HOST;
+    }
+  });
+
   // Validation state
   let errors = $state<Partial<Record<keyof typeof formState | keyof typeof formState.parameters, string | null>>>({});
   let isSubmitting = $state(false);
@@ -50,6 +62,7 @@
   let isValid = $derived(
     formState.name.trim() !== '' &&
     formState.model_id.trim() !== '' &&
+    formState.api_url?.trim() &&
     formState.parameters.temperature >= 0 && formState.parameters.temperature <= 2 &&
     formState.parameters.top_p >= 0 && formState.parameters.top_p <= 1 &&
     formState.parameters.top_k >= 1 && formState.parameters.top_k <= 40 &&
@@ -64,6 +77,9 @@
         break;
       case 'model_id':
         errors[field] = !value.trim() ? 'Model ID is required' : null;
+        break;
+      case 'api_url':
+        errors[field] = !value.trim() ? 'Host URL is required' : null;
         break;
       case 'temperature':
         errors[field] = value < 0 || value > 2 ? 'Temperature must be between 0 and 2' : null;
@@ -87,6 +103,7 @@
     // Validate all fields
     validateField('name', formState.name);
     validateField('model_id', formState.model_id);
+    validateField('api_url', formState.api_url);
     Object.keys(formState.parameters).forEach(key => {
       validateField(key as keyof typeof formState.parameters, formState.parameters[key as keyof typeof formState.parameters]);
     });
@@ -104,6 +121,7 @@
         description: formState.description,
         type: formState.type,
         model_id: formState.model_id,
+        api_url: formState.api_url,
         parameters: {
           temperature: formState.parameters.temperature,
           top_p: formState.parameters.top_p,
@@ -209,18 +227,18 @@
       </div>
 
       <div>
-        <label for="host" class="block text-sm font-medium text-surface-200 mb-1">Host</label>
+        <label for="api_url" class="block text-sm font-medium text-surface-200 mb-1">Host URL</label>
         <input
-          id="host"
+          id="api_url"
           type="text"
-          bind:value={formState.parameters.host}
-          onblur={() => handleBlur('host')}
+          bind:value={formState.api_url}
+          onblur={() => handleBlur('api_url')}
           class="w-full px-3 py-2 bg-surface-700 border border-surface-600 rounded-md text-white focus:ring-primary-500 focus:border-primary-500"
           placeholder="http://localhost:11434"
           required
         />
-        {#if errors.host}
-          <p class="mt-1 text-sm text-red-500">{errors.host}</p>
+        {#if errors.api_url}
+          <p class="mt-1 text-sm text-red-500">{errors.api_url}</p>
         {/if}
       </div>
 
