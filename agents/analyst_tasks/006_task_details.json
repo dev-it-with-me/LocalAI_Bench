@@ -1,0 +1,86 @@
+{
+  "task_id": "d15874fb-7e7b-4d31-9c2c-37f58201baa1",
+  "task_type": "feature",
+  "feature_request": "Develop Svelte UI components to enable users to add a new Ollama model via a form interface, as described in pm_tasks/006.md",
+  "summary": "Create a new Svelte + TypeScript UI component for adding Ollama models and integrate it with the existing model workflow.",
+  "priority": "high",
+  "files_to_modify": [
+    {
+      "file_path": "/home/devit/dev/LocalAI_Bench/ui/src/routes/models/+page.svelte",
+      "sections": [
+        {
+          "section_title": "Integration with new AddOllamaModel.svelte",
+          "existing_code": "...existing code...",
+          "instructions": [
+            "Import the new AddOllamaModel.svelte component.",
+            "Add or refine the UI actions (e.g., a button) that opens a panel or section for the AddOllamaModel form.",
+            "Ensure consistent usage of Svelte 5 runes for state management and logging."
+          ],
+          "expected_code_changes": "",
+          "dependencies": [
+            "AddOllamaModel.svelte component"
+          ],
+          "error_handling": [],
+          "preconditions": [],
+          "postconditions": []
+        }
+      ],
+      "imports_to_add": [
+        "import AddOllamaModel from '../../components/model/AddOllamaModel.svelte'"
+      ],
+      "imports_to_remove": []
+    }
+  ],
+  "new_files": [
+    {
+      "file_path": "/home/devit/dev/LocalAI_Bench/ui/src/components/model/AddOllamaModel.svelte",
+      "sections": [
+        {
+          "section_title": "Add Ollama Model form component",
+          "instructions": [
+            "Implement a Svelte 5 + TypeScript form collecting fields such as model_id, host, temperature, top_p, top_k, max_tokens, stop_sequences, and any additional parameters.",
+            "Use built-in $state, $derived, and $effect for reactive state, and ensure form validation with appropriate error messages.",
+            "Incorporate Tailwind CSS for a desktop-focused responsive layout.",
+            "Use structured logging for form submission and error handling, including correlation IDs.",
+            "Document important logic and steps with concise comments."
+          ],
+          "expected_code_changes": "...component structure with input fields, integrated validation, and submission logic referencing existing patterns...",
+          "dependencies": [],
+          "error_handling": [
+            "If validation fails, display user-friendly error messages.",
+            "Handle any exceptions during form submission with structured logs."
+          ],
+          "preconditions": [
+            "The user must have navigated to or opened a panel providing this component."
+          ],
+          "postconditions": [
+            "Successfully added model data is persisted or passed to the existing workflow for saving."
+          ]
+        }
+      ],
+      "imports_to_add": [],
+      "imports_to_remove": []
+    }
+  ],
+  "tests_to_add": [
+    {
+      "file_path": "/home/devit/dev/LocalAI_Bench/ui/tests/components/model/AddOllamaModel.spec.ts",
+      "instructions": [
+        "Verify that all form fields (model_id, temperature, etc.) are rendered correctly.",
+        "Test form validation by providing invalid data in numeric fields and ensuring error messages appear.",
+        "Check that valid data triggers the correct submission flow.",
+        "Ensure structured logs are generated with the right context."
+      ]
+    }
+  ],
+  "testing_notes": "Focus on validating the form inputs and ensuring integration with the existing model creation workflow. Include boundary checks (e.g., negative or out-of-range numeric values).",
+  "dependencies": [
+    "Svelte 5",
+    "Tailwind CSS"
+  ],
+  "additional_notes": {
+    "common_pitfalls": "Not resetting form states properly, missing correlation IDs in logs.",
+    "edge_cases": "Empty string for model_id, invalid numeric fields, or missing fields in extra parameters.",
+    "design_decisions": "New component is separated to keep the codebase modular and maintainable. Form logic follows existing patterns for consistency."
+  }
+}

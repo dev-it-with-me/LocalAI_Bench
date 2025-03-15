@@ -1,5 +1,5 @@
 <script lang="ts">
-  // filepath: src/lib/components/categories/CategoryDetails.svelte
+  import type { CategoryModel } from '$lib/services/type';
 
   // Props
   let {
@@ -8,8 +8,8 @@
     onDeleteCategory,
     onAddNewCategory,
   } = $props<{ 
-    selectedCategory: any;
-    onEditCategory: (category: any) => void;
+    selectedCategory: CategoryModel | null;
+    onEditCategory: (category: CategoryModel) => void;
     onDeleteCategory: (categoryId: string) => void;
     onAddNewCategory: () => void;
   }>();

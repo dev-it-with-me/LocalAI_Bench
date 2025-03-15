@@ -1,0 +1,15 @@
+{
+    "task_id": "d15874fb-7e7b-4d31-9c2c-37f58201baa1",
+    "clarifications": [
+      {
+        "file_path": "/home/devit/dev/LocalAI_Bench/ui/src/components/model/AddOllamaModel.svelte",
+        "section_title": "Add Ollama Model form component",
+        "questions": [
+          "What are the validation rules and allowed ranges for numeric fields (temperature, top_p, top_k, max_tokens)?",
+          "What is the format for stop_sequences (string array or comma-separated string)?",
+          "What is the API endpoint and contract for form submission?",
+          "Please provide TypeScript interfaces for the form data structure and API response"
+        ]
+      }
+    ]
+}

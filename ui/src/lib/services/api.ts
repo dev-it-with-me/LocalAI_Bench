@@ -2,7 +2,8 @@ import type {
   TaskResponse, 
   TaskCreateRequest, 
   TaskUpdateRequest, 
-  Category
+  Category,
+  ModelResponse
 } from './type';
 
 // Base API URL
@@ -16,12 +17,13 @@ const fetchOptions: RequestInit = {
   }
 };
 
-async function getModels(): Promise<any[]> {
+async function getModels(): Promise<ModelResponse[]> {
   const response = await fetch(`${API_BASE_URL}/api/models`, fetchOptions);
   if (!response.ok) {
     throw new Error(response.statusText);
   }
-  return await response.json();
+  const data = await response.json();
+  return data.models || [];
 }
 
 async function getCategories(): Promise<Category[]> {

@@ -4,34 +4,22 @@
   import CategoryDetails from '$lib/components/categories/CategoryDetails.svelte';
   import CategoryForm from '$lib/components/categories/CategoryForm.svelte';
   import { getContext } from 'svelte';
-
-  // Category model type
-  type Category = {
-    id: string;
-    name: string;
-    description: string;
-    task_ids: string[];
-    created_at: string;
-    updated_at: string;
-  };
+  import type { CategoryModel, CategoryCreateRequest, CategoryUpdateRequest } from '$lib/services/type';
 
   // Access layout store to update right panel content
   const layout: any = getContext('layout');
 
   // State management using Svelte 5 runes
-  let categories = $state<Category[]>([]);
+  let categories = $state<CategoryModel[]>([]);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
-  let selectedCategory = $state<Category | null>(null);
+  let selectedCategory = $state<CategoryModel | null>(null);
 
   // Form state
   let editMode = $state(false);
   let formName = $state('');
   let formDescription = $state('');
   let isSaving = $state(false);
-
-  // Derived properties
-  let hasCategories = $derived(categories.length > 0);
 
   // Update the right panel content whenever selection or edit mode changes
   $effect(() => {
@@ -94,7 +82,7 @@
   // Load categories on page load
   loadCategories();
 
-  function selectCategory(category: Category) {
+  function selectCategory(category: CategoryModel) {
     selectedCategory = category;
     editMode = false;
   }
@@ -135,20 +123,9 @@
     }
   }
 
-  async function saveCategory({ name, description }: { name: string; description: string }) {
-    // Basic validation
-    if (!name.trim()) {
-      alert('Category name is required');
-      return;
-    }
-
+  async function saveCategory(categoryData: CategoryCreateRequest | CategoryUpdateRequest) {
     try {
       isSaving = true;
-
-      const categoryData = {
-        name,
-        description,
-      };
 
       if (selectedCategory && selectedCategory.id) {
         // Update existing category
@@ -162,7 +139,7 @@
         selectedCategory = updated;
       } else {
         // Create new category
-        const created = await createCategory(categoryData);
+        const created = await createCategory(categoryData as CategoryCreateRequest);
 
         // Add to local state
         categories = [...categories, created];
@@ -183,7 +160,7 @@
   }
 </script>
 
-<div class="container mx-auto p-4 space-y-6">
+<div class="space-y-6">
   <div class="flex justify-between items-center">
     <h1 class="text-2xl font-bold">Categories</h1>
     <button
@@ -223,7 +200,6 @@
     </div>
   {:else}
     <div class="w-full">
-      <!-- Categories List -->
       <CategoryList
         categories={categories}
         selectedCategory={selectedCategory}

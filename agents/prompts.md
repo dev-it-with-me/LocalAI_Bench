@@ -12,6 +12,13 @@ As my Analyst Agent I want you to create a "Task Details" file for the Developer
 The file should include all necessary data and acceptance criteria.
 Task is described in the file: {task_name/number}.md
 ```
+```
+As my Analyst Agent I want you to clarify the task details.
+I am attaching questions from Developer Agent that need to be answered.
+Task is described in the file: {task_name/number}.md
+
+Do not answer the questions - implement the changes in the task file instead.
+```
 
 **III. Developer Agent Review**
 ```

@@ -1,5 +1,5 @@
 <script lang="ts">
-  // filepath: src/lib/components/categories/CategoryForm.svelte
+  import type { CategoryModel, CategoryCreateRequest, CategoryUpdateRequest } from '$lib/services/type';
 
   // Props
   let {
@@ -10,22 +10,48 @@
     onSaveCategory,
     onCancelEdit,
   } = $props<{ 
-    selectedCategory: any;
+    selectedCategory: CategoryModel | null;
     formName: string;
     formDescription: string;
     isSaving: boolean;
-    onSaveCategory: (data: { name: string; description: string }) => void;
+    onSaveCategory: (data: CategoryCreateRequest | CategoryUpdateRequest) => void;
     onCancelEdit: () => void;
   }>();
 
   let localName = $state(formName);
   let localDescription = $state(formDescription);
+  let errorMessage = $state<string | null>(null);
 
   // Update local values when props change
   $effect(() => {
     localName = formName;
     localDescription = formDescription;
   });
+
+  function validateForm(): boolean {
+    errorMessage = null;
+    if (!localName.trim()) {
+      errorMessage = 'Category name is required';
+      return false;
+    }
+    if (localName.length < 3) {
+      errorMessage = 'Category name must be at least 3 characters long';
+      return false;
+    }
+    return true;
+  }
+
+  function handleSubmit(e: Event) {
+    e.preventDefault();
+    if (!validateForm()) return;
+
+    const categoryData = {
+      name: localName.trim(),
+      description: localDescription.trim()
+    };
+    
+    onSaveCategory(categoryData);
+  }
 </script>
 
 <div class="bg-surface-800 border border-surface-700 rounded-md overflow-hidden">
@@ -36,8 +62,13 @@
   </div>
 
   <div class="p-4">
-    <!-- Category Edit Form -->
-    <form class="space-y-4">
+    <form class="space-y-4" onsubmit={handleSubmit}>
+      {#if errorMessage}
+        <div class="bg-red-900/30 border border-red-800 text-red-200 p-3 rounded-md text-sm">
+          {errorMessage}
+        </div>
+      {/if}
+
       <div>
         <label for="name" class="block text-sm font-medium text-surface-200 mb-1">Name*</label>
         <input
@@ -47,6 +78,7 @@
           class="w-full px-3 py-2 bg-surface-700 border border-surface-600 rounded-md text-white focus:ring-primary-500 focus:border-primary-500"
           placeholder="Category name"
           required
+          minlength="3"
         />
       </div>
 
@@ -64,12 +96,8 @@
       <div class="flex space-x-3 pt-4">
         <button
           type="submit"
-          onclick={(e) => {
-            e.preventDefault();
-            onSaveCategory({ name: localName, description: localDescription });
-          }}
           disabled={isSaving}
-          class="px-4 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600 flex-1 flex items-center justify-center"
+          class="px-4 py-2 bg-primary-500 text-white rounded-md hover:bg-primary-600 disabled:bg-primary-500/50 disabled:cursor-not-allowed flex-1 flex items-center justify-center"
         >
           {#if isSaving}
             <svg
@@ -88,7 +116,12 @@
           {/if}
           {selectedCategory ? 'Update' : 'Create'} Category
         </button>
-        <button type="button" onclick={onCancelEdit} class="px-4 py-2 bg-surface-600 text-white rounded-md hover:bg-surface-500 flex-1">
+        <button 
+          type="button" 
+          onclick={onCancelEdit} 
+          disabled={isSaving}
+          class="px-4 py-2 bg-surface-600 text-white rounded-md hover:bg-surface-500 disabled:bg-surface-600/50 disabled:cursor-not-allowed flex-1"
+        >
           Cancel
         </button>
       </div>
