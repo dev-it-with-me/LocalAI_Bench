@@ -50,7 +50,7 @@
 		// Prevent text selection during resize
 		document.body.style.userSelect = 'none';
 		
-			// Remove transition during resize for better performance
+		// Remove transition during resize for better performance
 		if (panelElement) {
 			panelElement.classList.add('resizing');
 		}
@@ -103,6 +103,7 @@
 			onmousedown={startResize}
 		></div>
 		
+		<!-- Header - Fixed at the top -->
 		<div class="border-surface-700 flex items-center justify-between border-b p-4">
 			<h2 class="text-lg font-semibold text-white">{title || 'Configuration'}</h2>
 			<button
@@ -126,31 +127,34 @@
 			</button>
 		</div>
 
-		<div class="flex-1 overflow-y-auto p-4">
-			<!-- Default content when nothing is selected -->
-			{#if !hasContent}
-				<div class="text-surface-300 flex h-full flex-col items-center justify-center text-center">
-					<svg
-						xmlns="http://www.w3.org/2000/svg"
-						width="48"
-						height="48"
-						viewBox="0 0 24 24"
-						fill="none"
-						stroke="currentColor"
-						stroke-width="1"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-					>
-						<circle cx="12" cy="12" r="10"></circle>
-						<line x1="12" y1="8" x2="12" y2="12"></line>
-						<line x1="12" y1="16" x2="12.01" y2="16"></line>
-					</svg>
-					<p class="mt-4">Select an item to view its details and configuration options</p>
-				</div>
-			{:else if component}
-				<!-- Render dynamic component using svelte:component -->
-				<svelte:component this={component} {...componentProps} />
-			{/if}
+		<!-- Content Container - Takes remaining height with independent scrolling -->
+		<div class="flex-1 overflow-hidden flex flex-col">
+			<div class="flex-1 overflow-y-auto overflow-x-hidden p-4 panel-content">
+				<!-- Default content when nothing is selected -->
+				{#if !hasContent}
+					<div class="text-surface-300 flex h-full flex-col items-center justify-center text-center">
+						<svg
+							xmlns="http://www.w3.org/2000/svg"
+							width="48"
+							height="48"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="1"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						>
+							<circle cx="12" cy="12" r="10"></circle>
+							<line x1="12" y1="8" x2="12" y2="12"></line>
+							<line x1="12" y1="16" x2="12.01" y2="16"></line>
+						</svg>
+						<p class="mt-4">Select an item to view its details and configuration options</p>
+					</div>
+				{:else if component}
+					<!-- Render dynamic component using svelte:component -->
+					<svelte:component this={component} {...componentProps} />
+				{/if}
+			</div>
 		</div>
 	{:else}
 		<button
@@ -185,5 +189,11 @@
 	/* Remove transition during active resizing for better performance */
 	.resizing {
 		transition: none !important;
+	}
+	
+	/* Ensure panel content is independently scrollable */
+	.panel-content {
+		height: 100%;
+		max-height: 100%;
 	}
 </style>

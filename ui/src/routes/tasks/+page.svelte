@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { getTasks, getCategories, getTemplates, createTask, updateTask, deleteTask as apiDeleteTask } from '$lib/services/api';
+  import { getTasks, getCategories, createTask, updateTask, deleteTask as apiDeleteTask } from '$lib/services/api';
   import TaskList from '$lib/components/tasks/TaskList.svelte';
   import TaskDetails from '$lib/components/tasks/TaskDetails.svelte';
   import TaskForm from '$lib/components/tasks/TaskForm.svelte';
   import { getContext } from 'svelte';
-  import type { TaskCreateRequest, TaskResponse, TaskUpdateRequest, Category, Template } from '$lib/services/type';
+  import type { TaskCreateRequest, TaskResponse, TaskUpdateRequest, Category } from '$lib/services/type';
   
   // Access layout store to update right panel content
   const layout: any = getContext('layout');
@@ -12,11 +12,9 @@
   // State management
   let tasks = $state<TaskResponse[]>([]);
   let categories = $state<Category[]>([]);
-  let templates = $state<Template[]>([]);
   let isLoading = $state(true);
   let error = $state<string | null>(null);
   let selectedTask = $state<TaskResponse | null>(null);
-  let selectedTemplate = $state<Template | null>(null);
   let isSaving = $state(false);
   
   // Filter state
@@ -27,7 +25,6 @@
   let formName = $state('');
   let formDescription = $state('');
   let formCategoryId = $state('');
-  let formTemplateId = $state('');
   let formInputData = $state<Record<string, any>>({});
   let formExpectedOutput = $state<string | null>(null);
 
@@ -58,16 +55,12 @@
           formName,
           formDescription,
           formCategoryId,
-          formTemplateId,
           formInputData,
           formExpectedOutput,
           categories,
-          templates,
-          selectedTemplate,
           isSaving,
           onSaveTask: handleSaveTask,
-          onCancelEdit: cancelEdit,
-          onTemplateChange: handleTemplateChange
+          onCancelEdit: cancelEdit
         }
       });
     } else if (selectedTask) {
@@ -80,9 +73,7 @@
         component: TaskDetails,
         props: {
           selectedTask,
-          selectedTemplate,
           categories,
-          templates,
           onEditTask: editTask,
           onDeleteTask: deleteTask
         }
@@ -97,15 +88,13 @@
 
   async function loadData() {
     try {
-      const [tasksData, categoriesData, templatesData] = await Promise.all([
+      const [tasksData, categoriesData] = await Promise.all([
         getTasks(),
-        getCategories(),
-        getTemplates()
+        getCategories()
       ]);
       
       tasks = tasksData;
       categories = categoriesData;
-      templates = templatesData;
     } catch (e) {
       error = e instanceof Error ? e.message : 'Failed to fetch data';
     } finally {
@@ -120,10 +109,8 @@
     formName = '';
     formDescription = '';
     formCategoryId = categories.length > 0 ? categories[0].id : '';
-    formTemplateId = '';
     formInputData = {};
     formExpectedOutput = null;
-    selectedTemplate = null;
   }
 
   function selectTask(task: TaskResponse) {
@@ -143,10 +130,8 @@
     formName = task.name;
     formDescription = task.description;
     formCategoryId = task.category_id;
-    formTemplateId = task.template_id;
     formInputData = { ...task.input_data };
     formExpectedOutput = task.expected_output;
-    selectedTemplate = templates.find(t => t.id === task.template_id) || null;
   }
   
   async function deleteTask(taskId: string) {
@@ -166,19 +151,12 @@
     }
   }
 
-  function handleTemplateChange(templateId: string) {
-    formTemplateId = templateId;
-    selectedTemplate = templates.find(t => t.id === templateId) || null;
-    formInputData = {};
-    formExpectedOutput = null;
-  }
-
   async function handleSaveTask(taskData: TaskCreateRequest | TaskUpdateRequest) {
     isSaving = true;
     try {
       if (selectedTask?.id) {
         const updated = await updateTask(selectedTask.id, taskData as TaskUpdateRequest);
-        tasks = tasks.map(t => t.id === selectedTask.id ? updated : t);
+        tasks = tasks.map(t => t.id === selectedTask?.id ? updated : t);
         selectedTask = updated;
       } else {
         const created = await createTask(taskData as TaskCreateRequest);
@@ -277,7 +255,6 @@
         tasks={filteredTasks}
         {selectedTask}
         {categories}
-        {templates}
         onSelectTask={selectTask}
         onEditTask={editTask}
         onDeleteTask={deleteTask}

@@ -1,12 +1,11 @@
 <script lang="ts">
-  import { type TaskResponse, type Category, type Template } from '$lib/services/type';
+  import { type TaskResponse, type Category } from '$lib/services/type';
 
   // Props
-  let { task, selectedTask, categories, templates, onSelectTask, onEditTask, onDeleteTask } = $props<{
+  let { task, selectedTask, categories, onSelectTask, onEditTask, onDeleteTask } = $props<{
     task: TaskResponse;
     selectedTask: TaskResponse | null;
     categories: Category[];
-    templates: Template[];
     onSelectTask: (task: TaskResponse) => void;
     onEditTask: (task: TaskResponse) => void;
     onDeleteTask: (taskId: string) => void;
@@ -16,10 +15,6 @@
   
   function getCategoryName(categoryId: string): string {
     return categories.find(c => c.id === categoryId)?.name || 'Unknown';
-  }
-  
-  function getTemplateName(templateId: string): string {
-    return templates.find(t => t.id === templateId)?.name || 'Unknown';
   }
 </script>
 
@@ -61,9 +56,6 @@
   <div class="flex items-center space-x-2 text-xs">
     <span class="px-2 py-0.5 bg-surface-700 rounded text-surface-200">
       {getCategoryName(task.category_id)}
-    </span>
-    <span class="px-2 py-0.5 bg-primary-900/50 text-primary-200 rounded">
-      {getTemplateName(task.template_id)}
     </span>
     <span class="text-surface-400">
       Updated {new Date(task.updated_at).toLocaleDateString()}

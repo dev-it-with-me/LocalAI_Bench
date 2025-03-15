@@ -76,7 +76,8 @@ The dashboard provides a summary of the scores for each model in each category, 
 - Local deployment instructions
 
 ### API Providers
-- OpenAI (GPT series)
+- Google AI API - with Python lib genai
+- DeepSeek API, OpenAI - using OpenAI Python lib
 - Anthropic (Claude models)
 - Custom API integration framework
 - Secure credential management
@@ -95,89 +96,6 @@ The dashboard provides a summary of the scores for each model in each category, 
 - Task-specific metrics are recorded and available in detailed reports
 - Task-level comparison available through filtering options in the dashboard
 
-## Task Templates
-
-Task templates provide standardized structures for creating comparable benchmarking tasks. They ensure consistency and reduce setup time.
-
-### Template Structure
-```json
-{
-  "template_id": "code-ui-component-update",
-  "name": "UI Component Update Task",
-  "category": "coding_ui_vision",
-  "description": "Task for updating UI components based on visual instructions",
-  "input_schema": {
-    "component_description": "string",
-    "current_code": "string",
-    "visual_instructions": "image_path",
-    "expected_behavior": "string"
-  },
-  "evaluation_criteria": {
-    "functional_correctness": {"weight": 0.4, "type": "unit_test"},
-    "visual_accuracy": {"weight": 0.3, "type": "manual_review"},
-    "code_quality": {"weight": 0.2, "type": "static_analysis"},
-    "performance": {"weight": 0.1, "type": "benchmark"}
-  },
-  "output_schema": {
-    "updated_code": "string",
-    "explanation": "string"
-  },
-  "test_cases": [
-    {"input": "test_inputs/ui_update_1.json", "expected": "test_expected/ui_update_1.json"}
-  ]
-}
-```
-
-### Example Templates
-
-1. **Document Information Extraction Template**
-```json
-{
-  "template_id": "invoice-extraction",
-  "name": "Invoice Information Extraction",
-  "category": "document_understanding",
-  "description": "Extract key fields from invoices",
-  "input_schema": {
-    "document_image": "image_path",
-    "target_fields": ["invoice_number", "date", "total_amount", "vendor_name"]
-  },
-  "evaluation_criteria": {
-    "field_accuracy": {"weight": 0.7, "type": "ground_truth_comparison"},
-    "processing_speed": {"weight": 0.3, "type": "time_measurement"}
-  },
-  "output_schema": {
-    "extracted_fields": "json_object"
-  }
-}
-```
-
-2. **Recruitment Screening Template**
-```json
-{
-  "template_id": "resume-screening",
-  "name": "Resume Screening Task",
-  "category": "recruitment_process",
-  "description": "Screen resumes for job fit",
-  "input_schema": {
-    "resume": "text",
-    "job_description": "text",
-    "required_skills": "string_array",
-    "preferred_qualifications": "string_array"
-  },
-  "evaluation_criteria": {
-    "candidate_ranking": {"weight": 0.5, "type": "ground_truth_comparison"},
-    "justification_quality": {"weight": 0.5, "type": "manual_review"}
-  },
-  "output_schema": {
-    "fit_score": "number",
-    "skill_matches": "string_array",
-    "missing_skills": "string_array",
-    "recommendation": "string",
-    "justification": "string"
-  }
-}
-```
-
 ## Data Storage and Sharing
 
 ### JSON Data Structure
@@ -193,10 +111,6 @@ LocalAI Bench uses JSON files for data storage to facilitate easy sharing of ben
     task_id_1.json
     task_id_2.json
     task_id_3.json
-  /templates
-    code-ui-component-update.json
-    invoice-extraction.json
-    resume-screening.json
   /models
     model_id_1.json
     model_id_2.json
@@ -210,8 +124,8 @@ LocalAI Bench uses JSON files for data storage to facilitate easy sharing of ben
 The export/import system allows users to share benchmarks, tasks, and results with others:
 
 #### Export Types
-- **Full Benchmark Suite**: Complete export of categories, tasks, templates, and configurations
-- **Category Export**: Export a specific category with all its tasks and templates
+- **Full Benchmark Suite**: Complete export of categories, tasks, and configurations
+- **Category Export**: Export a specific category with all its tasks
 - **Task Set Export**: Export a custom set of tasks across categories
 - **Results Export**: Export benchmark results for sharing or analysis
 
@@ -234,12 +148,8 @@ The export/import system allows users to share benchmarks, tasks, and results wi
       "description": "Benchmarks for document understanding tasks"
     },
     "tasks": [
-      {"id": "task1", "name": "Invoice Extraction", "template_id": "invoice-extraction", "...": "..."},
-      {"id": "task2", "name": "Contract Analysis", "template_id": "contract-analysis", "...": "..."}
-    ],
-    "templates": [
-      {"id": "invoice-extraction", "...": "..."},
-      {"id": "contract-analysis", "...": "..."}
+      {"id": "task1", "name": "Invoice Extraction",  "...": "..."},
+      {"id": "task2", "name": "Contract Analysis",  "...": "..."}
     ]
   }
 }
@@ -268,7 +178,6 @@ The export/import system allows users to share benchmarks, tasks, and results wi
 - **Benchmark Service**: Manages benchmark runs, status tracking, and results analysis.
 - **Category Service**: Handles CRUD operations for categories and task assignments.
 - **Task Service**: Manages CRUD operations for tasks, category assignments, and status.
-- **Template Service**: Handles CRUD operations, validation, and task listing for templates.
 - **Model Service**: Manages CRUD operations and testing for AI models.
 - **Import/Export Service**: Provides data export/import functionality.
 
@@ -337,7 +246,6 @@ Each service will have its own:
   - Categories
   - Tasks
   - Models
-  - Templates
   - Results
   - Settings
 - **Breadcrumb navigation** for deep hierarchies
@@ -383,7 +291,6 @@ Each service will have its own:
 - **Category Export/Import**: For sharing category benchmarks
 
 #### Task Editor
-- **Template-based Creation**: Wizard interface for creating tasks from templates
 - **Input Configuration**: Form-based interface for configuring task inputs
 - **Output Validation**: Preview of expected outputs and validation rules
 - **Preview**: Interface for previewing task final state before adding to benchmark

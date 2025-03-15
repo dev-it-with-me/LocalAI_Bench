@@ -33,8 +33,10 @@
 </script>
 
 <AppShell slotSidebarLeft={leftSidebarExpanded ? 'w-64' : 'w-16'} slotHeader="bg-surface-100-800-token">
-	<div class="bg-surface-900 flex h-full flex-col text-white">
-		<main class="flex flex-1 overflow-hidden">
+	<!-- Main Application Container with absolute positioning for StatusBar -->
+	<div class="bg-surface-900 text-white flex flex-col h-full relative">
+		<!-- Main Content Area -->
+		<div class="absolute inset-0 bottom-8 flex overflow-hidden">
 			<!-- Left Sidebar Navigation -->
 			<LeftSidebar expanded={leftSidebarExpanded} />
 
@@ -45,10 +47,12 @@
 
 			<!-- Right Configuration Panel -->
 			<RightPanel title={configurationTitle} hasContent={hasConfigContent} children={configContent} />
-		</main>
+		</div>
 
-		<!-- Status Bar -->
-		<StatusBar {activeModel} {currentOperation} />
+		<!-- Status Bar (fixed at bottom with absolute positioning) -->
+		<div class="absolute bottom-0 left-0 right-0">
+			<StatusBar {activeModel} {currentOperation} />
+		</div>
 	</div>
 </AppShell>
 

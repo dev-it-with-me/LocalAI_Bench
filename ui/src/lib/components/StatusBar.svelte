@@ -30,7 +30,7 @@
   });
 </script>
 
-<footer class="flex items-center justify-between px-4 py-2 bg-surface-900 border-t border-surface-700 text-white text-sm">
+<footer class="flex items-center justify-between px-4 py-2 bg-surface-900 border-t border-surface-700 text-white text-sm h-8 z-10">
   <div class="flex items-center space-x-4">
     <div class="flex items-center">
       <span class="text-surface-300 mr-2">Status:</span>

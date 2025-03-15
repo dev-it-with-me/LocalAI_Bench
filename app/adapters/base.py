@@ -56,7 +56,7 @@ class ModelAdapter(Generic[T], abc.ABC):
         pass
 
     @abc.abstractmethod
-    async def generate_stream(self, prompt: str, **kwargs) -> AsyncIterator[T]:  # Corrected type hint
+    async def generate_stream(self, prompt: str, **kwargs) -> AsyncIterator[T]:
         """Generate a streaming response from the model.
 
         Args:
@@ -102,3 +102,41 @@ class ModelAdapter(Generic[T], abc.ABC):
     def supported_model_type(cls) -> ModelTypeEnum:
         """Return the model type supported by this adapter."""
         pass
+
+
+class ModelAdapterFactory:
+    """Factory for creating model adapters."""
+
+    _adapter_classes: list[type[ModelAdapter]] = []
+
+    @classmethod
+    def register_adapter(cls, adapter_class: type[ModelAdapter]) -> None:
+        """Register a model adapter class.
+
+        Args:
+            adapter_class: The adapter class to register
+        """
+        cls._adapter_classes.append(adapter_class)
+
+    @classmethod
+    def create_adapter(cls, model_config: Model) -> ModelAdapter:
+        """Create a model adapter instance for the given model configuration.
+
+        Args:
+            model_config: Model configuration
+
+        Returns:
+            An instance of the appropriate model adapter
+
+        Raises:
+            ModelAdapterError: If no adapter is found for the model type
+        """
+        for adapter_class in cls._adapter_classes:
+            if adapter_class.supported_model_type() == model_config.type:
+                return adapter_class(model_config)
+
+        raise ModelAdapterError(
+            f"No adapter found for model type: {model_config.type.value}",
+            model_type=model_config.type.value,
+            model_id=model_config.id,
+        )

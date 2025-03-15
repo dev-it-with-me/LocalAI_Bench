@@ -1,10 +1,11 @@
 # OllamaAdapter (Subclass)
 import asyncio
-from typing import Any, AsyncIterator
+from typing import Any
+from collections.abc import AsyncIterator
 
 from pydantic import BaseModel, Field
 
-from app.adapters.base import ModelAdapter, ModelAdapterFactory  # Import corrected base class
+from app.adapters.base import ModelAdapter, ModelAdapterFactory  # Import corrected base class and factory
 from app.config import settings
 from app.enums import ModelTypeEnum
 from app.exceptions import ModelAdapterError
@@ -89,7 +90,7 @@ class OllamaAdapter(ModelAdapter[str]):
                 model_id=self.model_config.model_id,
             ) from e
 
-    async def generate_stream(self, prompt: str, **kwargs) -> AsyncIterator[str]:  # Corrected type hint
+    async def generate_stream(self, prompt: str, **kwargs) -> AsyncIterator[str]:
         """Generate a streaming response from the model."""
         if self.client is None:
             raise ModelAdapterError(
@@ -164,3 +165,6 @@ class OllamaAdapter(ModelAdapter[str]):
     def supported_model_type(cls) -> ModelTypeEnum:
         """Return the model type supported by this adapter."""
         return ModelTypeEnum.OLLAMA
+
+
+ModelAdapterFactory.register_adapter(OllamaAdapter) # Register adapter

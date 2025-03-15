@@ -8,7 +8,6 @@
 		{ title: 'Categories', icon: 'folder', path: '/categories' },
 		{ title: 'Tasks', icon: 'check-square', path: '/tasks' },
 		{ title: 'Models', icon: 'box', path: '/models' },
-		{ title: 'Templates', icon: 'file-text', path: '/templates' },
 		{ title: 'Results', icon: 'bar-chart', path: '/results' },
 		{ title: 'Settings', icon: 'settings', path: '/settings' }
 	];

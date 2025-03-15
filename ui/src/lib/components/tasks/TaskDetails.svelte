@@ -1,29 +1,21 @@
 <script lang="ts">
-  import { type TaskResponse, type Category, type Template, type ImageInputData } from '$lib/services/type';
+  import { type TaskResponse, type Category, type ImageInputData } from '$lib/services/type';
 
   // Props
   let {
     selectedTask,
-    selectedTemplate,
     categories,
-    templates,
     onEditTask,
     onDeleteTask
   } = $props<{
     selectedTask: TaskResponse;
-    selectedTemplate: Template | null;
     categories: Category[];
-    templates: Template[];
     onEditTask: (task: TaskResponse) => void;
     onDeleteTask: (taskId: string) => void;
   }>();
   
   function getCategoryName(categoryId: string): string {
     return categories.find(c => c.id === categoryId)?.name || 'Unknown';
-  }
-  
-  function getTemplateName(templateId: string): string {
-    return templates.find(t => t.id === templateId)?.name || 'Unknown';
   }
 
   let hasImages = $derived(
@@ -38,9 +30,6 @@
       <div class="flex items-center mb-2">
         <span class="px-2 py-0.5 bg-surface-700 rounded text-xs font-medium mr-2">
           {getCategoryName(selectedTask.category_id)}
-        </span>
-        <span class="px-2 py-0.5 bg-primary-900/50 text-primary-200 rounded text-xs font-medium">
-          {getTemplateName(selectedTask.template_id)}
         </span>
       </div>
       <h3 class="text-lg font-semibold mb-2">{selectedTask.name}</h3>
