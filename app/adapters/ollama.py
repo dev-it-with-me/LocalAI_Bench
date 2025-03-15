@@ -123,25 +123,17 @@ class OllamaAdapter(ModelAdapter[str]):
 
     async def get_token_count(self, text: str) -> int:
         """Get the number of tokens in the text."""
-        if self.client is None:
-            raise ModelAdapterError(
-                "Ollama client not initialized. Call initialize() first.",
-                model_type=ModelTypeEnum.OLLAMA.value,
-                model_id=self.model_config.model_id,
-            )
+        # Ollama doesn't support token counting directly
+        # This is a placeholder that returns an approximate count
+        return len(text.split())
 
-        try:
-            response = await self.client.tokenize(model=self.model_config.model_id, prompt=text)
-            return len(response["tokens"])
-
-        except Exception as e:
-            error_msg = f"Error counting tokens for text '{text}': {str(e)}"
-            self.logger.error(error_msg)
-            raise ModelAdapterError(
-                error_msg,
-                model_type=ModelTypeEnum.OLLAMA.value,
-                model_id=self.model_config.model_id,
-            ) from e
+    def get_statistics(self) -> dict[str, Any]:
+        """Get model statistics."""
+        return {
+            "type": self.model_config.type.value,
+            "model_id": self.model_config.model_id,
+            "initialized": self.client is not None
+        }
 
     async def cleanup(self) -> None:
         """Clean up resources used by the model."""
@@ -160,6 +152,17 @@ class OllamaAdapter(ModelAdapter[str]):
                 model_type=ModelTypeEnum.OLLAMA.value,
                 model_id=self.model_config.model_id,
             ) from e
+
+    @classmethod
+    async def check_model_availability(cls, model_id: str, host: str | None = None) -> bool:
+        """Check if a model is available on the Ollama instance."""
+        try:
+            host = host or settings.OLLAMA_HOST
+            client = AsyncClient(host=host)
+            await client.show(model=model_id)
+            return True
+        except Exception:
+            return False
 
     @classmethod
     def supported_model_type(cls) -> ModelTypeEnum:

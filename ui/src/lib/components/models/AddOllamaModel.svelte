@@ -1,20 +1,21 @@
 <script lang="ts">
-  import type { ModelCreateRequest } from '$lib/services/type';
-  import { ModelProviderEnum } from '$lib/services/type';
+  import type { ModelResponse, ModelCreateRequest } from '$lib/services/type';
+  import { ModelProviderEnum, ModelTypeEnum } from '$lib/services/type';
 
   // Props definition using Svelte 5 runes
   const props = $props<{
     onSubmit: (request: ModelCreateRequest) => Promise<void>;
     onCancel: () => void;
+    model?: ModelResponse;  // Optional model for editing
   }>();
 
-  // Form state
+  // Form state initialized with model data if editing
   let formState = $state<{
     name: string;
     description: string;
-    config: {
-      model_id: string;
-      host: string;
+    type: ModelTypeEnum;
+    model_id: string;
+    parameters: {
       temperature: number;
       top_p: number;
       top_k: number;
@@ -22,46 +23,47 @@
       stop_sequences: string[];
     };
   }>({
-    name: '',
-    description: '',
-    config: {
-      model_id: '',
-      host: 'http://localhost:11434',
-      temperature: 0.7,
-      top_p: 1.0,
-      top_k: 40,
-      max_tokens: 2048,
-      stop_sequences: []
+    name: props.model?.name ?? '',
+    description: props.model?.description ?? '',
+    type: props.model?.type ?? ModelTypeEnum.OLLAMA,
+    model_id: props.model?.model_id ?? '',
+    parameters: {
+      temperature: props.model?.parameters?.temperature ?? 0.7,
+      top_p: props.model?.parameters?.top_p ?? 1.0,
+      top_k: props.model?.parameters?.top_k ?? 40,
+      max_tokens: props.model?.parameters?.max_tokens ?? 2048,
+      stop_sequences: props.model?.parameters?.stop_sequences ?? []
     }
   });
 
+  // Available model types (for now only OLLAMA, more to be added)
+  const modelTypes = [
+    { value: ModelTypeEnum.OLLAMA, label: 'Ollama' }
+  ];
+
   // Validation state
-  let errors = $state<Partial<Record<keyof typeof formState.config | 'name', string | null>>>({});
+  let errors = $state<Partial<Record<keyof typeof formState | keyof typeof formState.parameters, string | null>>>({});
   let isSubmitting = $state(false);
   let submitError = $state<string | null>(null);
 
   // Derived validation state
   let isValid = $derived(
     formState.name.trim() !== '' &&
-    formState.config.model_id.trim() !== '' &&
-    formState.config.host.trim() !== '' &&
-    formState.config.temperature >= 0 && formState.config.temperature <= 2 &&
-    formState.config.top_p >= 0 && formState.config.top_p <= 1 &&
-    formState.config.top_k >= 1 && formState.config.top_k <= 40 &&
-    formState.config.max_tokens >= 1 && formState.config.max_tokens <= 2048
+    formState.model_id.trim() !== '' &&
+    formState.parameters.temperature >= 0 && formState.parameters.temperature <= 2 &&
+    formState.parameters.top_p >= 0 && formState.parameters.top_p <= 1 &&
+    formState.parameters.top_k >= 1 && formState.parameters.top_k <= 40 &&
+    formState.parameters.max_tokens >= 1 && formState.parameters.max_tokens <= 2048
   );
 
   // Validate individual fields
-  function validateField(field: keyof typeof formState.config | 'name', value: any) {
+  function validateField(field: keyof typeof formState | keyof typeof formState.parameters, value: any) {
     switch (field) {
       case 'name':
         errors[field] = !value.trim() ? 'Name is required' : null;
         break;
       case 'model_id':
         errors[field] = !value.trim() ? 'Model ID is required' : null;
-        break;
-      case 'host':
-        errors[field] = !value.trim() ? 'Host is required' : null;
         break;
       case 'temperature':
         errors[field] = value < 0 || value > 2 ? 'Temperature must be between 0 and 2' : null;
@@ -84,8 +86,9 @@
     
     // Validate all fields
     validateField('name', formState.name);
-    Object.keys(formState.config).forEach(key => {
-      validateField(key as keyof typeof formState.config, formState.config[key as keyof typeof formState.config]);
+    validateField('model_id', formState.model_id);
+    Object.keys(formState.parameters).forEach(key => {
+      validateField(key as keyof typeof formState.parameters, formState.parameters[key as keyof typeof formState.parameters]);
     });
     
     if (!isValid) {
@@ -96,11 +99,18 @@
       isSubmitting = true;
       submitError = null;
 
-      const request: ModelCreateRequest = {
+      const request = {
         name: formState.name,
         description: formState.description,
-        provider: ModelProviderEnum.OLLAMA,
-        config: formState.config
+        type: formState.type,
+        model_id: formState.model_id,
+        parameters: {
+          temperature: formState.parameters.temperature,
+          top_p: formState.parameters.top_p,
+          top_k: formState.parameters.top_k,
+          max_tokens: formState.parameters.max_tokens,
+          stop_sequences: formState.parameters.stop_sequences
+        }
       };
       
       await props.onSubmit(request);
@@ -119,7 +129,7 @@
   // Handle stop sequences input
   function handleStopSequencesInput(value: string) {
     try {
-      formState.config.stop_sequences = JSON.parse(value);
+      formState.parameters.stop_sequences = JSON.parse(value);
       errors.stop_sequences = null;
     } catch {
       errors.stop_sequences = 'Invalid JSON array format';
@@ -127,11 +137,11 @@
   }
 
   // Handle input blur for validation
-  function handleBlur(field: keyof typeof formState.config | 'name') {
+  function handleBlur(field: keyof typeof formState | 'name') {
     if (field === 'name') {
       validateField(field, formState.name);
     } else {
-      validateField(field, formState.config[field]);
+      validateField(field, formState.parameters[field]);
     }
   }
 </script>
@@ -169,14 +179,28 @@
     
     <div class="space-y-4">
       <div>
+        <label for="type" class="block text-sm font-medium text-surface-200 mb-1">Model Type</label>
+        <select 
+          id="type"
+          bind:value={formState.type}
+          class="w-full px-3 py-2 bg-surface-700 border border-surface-600 rounded-md text-white focus:ring-primary-500 focus:border-primary-500"
+          required
+        >
+          {#each modelTypes as type}
+            <option value={type.value}>{type.label}</option>
+          {/each}
+        </select>
+      </div>
+
+      <div>
         <label for="model_id" class="block text-sm font-medium text-surface-200 mb-1">Model ID</label>
         <input
           id="model_id"
           type="text"
-          bind:value={formState.config.model_id}
+          bind:value={formState.model_id}
           onblur={() => handleBlur('model_id')}
           class="w-full px-3 py-2 bg-surface-700 border border-surface-600 rounded-md text-white focus:ring-primary-500 focus:border-primary-500"
-          placeholder="llama2, mistral, etc."
+          placeholder="llama2:13b, mistral:7b-q4_K_M, etc."
           required
         />
         {#if errors.model_id}
@@ -189,7 +213,7 @@
         <input
           id="host"
           type="text"
-          bind:value={formState.config.host}
+          bind:value={formState.parameters.host}
           onblur={() => handleBlur('host')}
           class="w-full px-3 py-2 bg-surface-700 border border-surface-600 rounded-md text-white focus:ring-primary-500 focus:border-primary-500"
           placeholder="http://localhost:11434"
@@ -206,7 +230,7 @@
           <input
             id="temperature"
             type="number"
-            bind:value={formState.config.temperature}
+            bind:value={formState.parameters.temperature}
             onblur={() => handleBlur('temperature')}
             class="w-full px-3 py-2 bg-surface-700 border border-surface-600 rounded-md text-white focus:ring-primary-500 focus:border-primary-500"
             min="0"
@@ -223,7 +247,7 @@
           <input
             id="top_p"
             type="number"
-            bind:value={formState.config.top_p}
+            bind:value={formState.parameters.top_p}
             onblur={() => handleBlur('top_p')}
             class="w-full px-3 py-2 bg-surface-700 border border-surface-600 rounded-md text-white focus:ring-primary-500 focus:border-primary-500"
             min="0"
@@ -240,7 +264,7 @@
           <input
             id="top_k"
             type="number"
-            bind:value={formState.config.top_k}
+            bind:value={formState.parameters.top_k}
             onblur={() => handleBlur('top_k')}
             class="w-full px-3 py-2 bg-surface-700 border border-surface-600 rounded-md text-white focus:ring-primary-500 focus:border-primary-500"
             min="1"
@@ -256,7 +280,7 @@
           <input
             id="max_tokens"
             type="number"
-            bind:value={formState.config.max_tokens}
+            bind:value={formState.parameters.max_tokens}
             onblur={() => handleBlur('max_tokens')}
             class="w-full px-3 py-2 bg-surface-700 border border-surface-600 rounded-md text-white focus:ring-primary-500 focus:border-primary-500"
             min="1"
@@ -273,7 +297,7 @@
         <input
           id="stop_sequences"
           type="text"
-          value={JSON.stringify(formState.config.stop_sequences)}
+          value={JSON.stringify(formState.parameters.stop_sequences)}
           oninput={(e) => handleStopSequencesInput(e.currentTarget.value)}
           class="w-full px-3 py-2 bg-surface-700 border border-surface-600 rounded-md text-white focus:ring-primary-500 focus:border-primary-500"
           placeholder='["END", "STOP"]'

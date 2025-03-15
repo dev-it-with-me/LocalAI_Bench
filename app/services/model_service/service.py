@@ -5,13 +5,12 @@ Model service implementation.
 from typing import Any
 
 from app.adapters.base import ModelAdapterFactory
+from app.adapters.ollama import OllamaAdapter
 from app.enums import ModelTypeEnum
 from app.exceptions import ValidationError, ModelTestError
 from app.services.model_service.repositories import ModelRepository
 from app.utils import get_logger
-from app.services.model_service.schemas import ModelParametersSchema
-
-from app.services.model_service.models import Model
+from app.services.model_service.models import Model, ModelParameters
 
 
 class ModelService:
@@ -38,6 +37,15 @@ class ModelService:
         quantization: None | str = None,
     ) -> Model:
         """Create a new model."""
+        # Check if model exists in Ollama if it's an Ollama model
+        if type == ModelTypeEnum.OLLAMA:
+            is_available = await OllamaAdapter.check_model_availability(model_id, api_url)
+            if not is_available:
+                raise ValidationError(
+                    f"Ollama model '{model_id}' is not available on the machine. "
+                    "Please pull the model using 'ollama pull' command first."
+                )
+
         model = Model(
             name=name,
             type=type,
@@ -46,7 +54,7 @@ class ModelService:
             api_url=api_url,
             api_key=api_key,
             api_version=api_version,
-            parameters=ModelParametersSchema(**(parameters or {})),
+            parameters=ModelParameters(**(parameters or {})),
             memory_required=memory_required,
             gpu_required=gpu_required,
             quantization=quantization
@@ -100,7 +108,7 @@ class ModelService:
         if api_version is not None:
             model.api_version = api_version
         if parameters is not None:
-            model.parameters = ModelParametersSchema(**parameters)
+            model.parameters = ModelParameters(**parameters)
         if memory_required is not None:
             model.memory_required = memory_required
         if gpu_required is not None:

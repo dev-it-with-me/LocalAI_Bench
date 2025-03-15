@@ -3,7 +3,9 @@ import type {
   TaskCreateRequest, 
   TaskUpdateRequest, 
   Category,
-  ModelResponse
+  ModelResponse,
+  ModelCreateRequest,
+  ModelUpdateRequest
 } from './type';
 
 // Base API URL
@@ -17,13 +19,59 @@ const fetchOptions: RequestInit = {
   }
 };
 
+// Model operations
 async function getModels(): Promise<ModelResponse[]> {
   const response = await fetch(`${API_BASE_URL}/api/models`, fetchOptions);
   if (!response.ok) {
-    throw new Error(response.statusText);
+    const error = await response.json();
+    throw new Error(error.detail || 'Failed to fetch models');
   }
   const data = await response.json();
   return data.models || [];
+}
+
+async function createModel(modelData: ModelCreateRequest): Promise<ModelResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/models`, {
+    ...fetchOptions,
+    method: 'POST',
+    body: JSON.stringify(modelData)
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || 'Failed to create model');
+  }
+  
+  return await response.json();
+}
+
+async function updateModel(id: string, modelData: ModelUpdateRequest): Promise<ModelResponse> {
+  const response = await fetch(`${API_BASE_URL}/api/models/${id}`, {
+    ...fetchOptions,
+    method: 'PATCH',
+    body: JSON.stringify(modelData)
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || 'Failed to update model');
+  }
+  
+  return await response.json();
+}
+
+async function deleteModel(id: string): Promise<boolean> {
+  const response = await fetch(`${API_BASE_URL}/api/models/${id}`, {
+    ...fetchOptions,
+    method: 'DELETE'
+  });
+  
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.detail || 'Failed to delete model');
+  }
+  
+  return true;
 }
 
 async function getCategories(): Promise<Category[]> {
@@ -163,7 +211,10 @@ async function getBenchmarks(): Promise<any[]> {
 }
 
 export { 
-  getModels, 
+  getModels,
+  createModel,
+  updateModel,
+  deleteModel,
   getCategories, 
   getCategory,
   createCategory,

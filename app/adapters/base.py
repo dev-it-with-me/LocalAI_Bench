@@ -1,10 +1,11 @@
 # ModelAdapter (Base Class)
 import abc
-from typing import TypeVar, Generic
+from typing import TypeVar, Generic, Any
 from collections.abc import AsyncIterator
 from app.enums import ModelTypeEnum
 from app.services.model_service.models import Model
 from app.exceptions import ModelAdapterError
+from app.utils import get_logger
 
 # Type variable for response types
 T = TypeVar('T')
@@ -20,12 +21,7 @@ class ModelAdapter(Generic[T], abc.ABC):
             model_config: Configuration for the model
         """
         self.model_config = model_config
-        self.logger = self._setup_logger()
-
-    def _setup_logger(self):
-        """Set up a logger for the adapter."""
-        from app.utils import get_logger
-        return get_logger(f"ModelAdapter:{self.model_config.name}")
+        self.logger = get_logger(f"{self.__class__.__name__}_{model_config.id}")
 
     @abc.abstractmethod
     async def initialize(self) -> None:
@@ -84,6 +80,11 @@ class ModelAdapter(Generic[T], abc.ABC):
         Raises:
             ModelAdapterError: If token counting fails
         """
+        pass
+
+    @abc.abstractmethod
+    def get_statistics(self) -> dict[str, Any]:
+        """Get model statistics."""
         pass
 
     @abc.abstractmethod

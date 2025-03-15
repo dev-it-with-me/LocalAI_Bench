@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { getModels } from '$lib/services/api';
+  import { getModels, createModel, updateModel, deleteModel } from '$lib/services/api';
   import AddOllamaModel from '$lib/components/models/AddOllamaModel.svelte';
   import ModelList from '$lib/components/models/ModelList.svelte';
   import ModelDetails from '$lib/components/models/ModelDetails.svelte';
@@ -28,47 +28,14 @@
     updateRightPanel();
   });
 
-  function updateRightPanel() {
-    if (editMode) {
-      // Set form in right panel
-      layout.configurationTitle = selectedModel ? `Edit Model: ${selectedModel.name}` : 'Add New Model';
-      layout.hasConfigContent = true;
-      
-      // Set form component
-      layout.configContent = () => ({
-        component: AddOllamaModel,
-        props: {
-          onSubmit: handleSaveModel,
-          onCancel: cancelEdit
-        }
-      });
-    } else if (selectedModel) {
-      // Set details in right panel
-      layout.configurationTitle = `Model: ${selectedModel.name}`;
-      layout.hasConfigContent = true;
-      
-      // Set details component
-      layout.configContent = () => ({
-        component: ModelDetails,
-        props: {
-          model: selectedModel,
-          onEdit: editModel,
-          onDelete: deleteModel
-        }
-      });
-    } else {
-      // Clear right panel
-      layout.configurationTitle = 'Model Details';
-      layout.hasConfigContent = false;
-      layout.configContent = null;
-    }
-  }
-
   async function loadModels() {
     try {
+      isLoading = true;
+      error = null;
       models = await getModels();
     } catch (e) {
       error = e instanceof Error ? e.message : 'Failed to fetch models';
+      console.error('[ModelsPage] Failed to load models:', error);
     } finally {
       isLoading = false;
     }
@@ -92,15 +59,51 @@
     selectedModel = model;
   }
   
-  async function deleteModel(modelId: string) {
+  async function deleteModelHandler(modelId: string) {
     if (confirm('Are you sure you want to delete this model?')) {
-      // In a real app, delete via API
-      models = models.filter(m => m.id !== modelId);
-      
-      if (selectedModel?.id === modelId) {
-        selectedModel = null;
-        editMode = false;
+      try {
+        await deleteModel(modelId);
+        models = models.filter(m => m.id !== modelId);
+        
+        if (selectedModel?.id === modelId) {
+          selectedModel = null;
+          editMode = false;
+        }
+      } catch (e) {
+        const errorMessage = e instanceof Error ? e.message : 'Failed to delete model';
+        alert(errorMessage);
+        console.error('[ModelsPage] Failed to delete model:', errorMessage);
       }
+    }
+  }
+
+  async function handleSaveModel(request: ModelCreateRequest) {
+    isSaving = true;
+    try {
+      if (selectedModel) {
+        // Update existing model
+        const updated = await updateModel(selectedModel.id, {
+          name: request.name,
+          description: request.description,
+          config: request.config
+        });
+        models = models.map(m => m.id === selectedModel.id ? updated : m);
+        selectedModel = updated;
+      } else {
+        // Add new model
+        const created = await createModel(request);
+        models = [...models, created];
+        selectedModel = created;
+      }
+      
+      editMode = false;
+    } catch (e) {
+      const errorMessage = e instanceof Error ? e.message : 'Failed to save model';
+      alert(errorMessage);
+      console.error('[ModelsPage] Failed to save model:', errorMessage);
+      throw e; // Re-throw to be handled by the form
+    } finally {
+      isSaving = false;
     }
   }
 
@@ -111,46 +114,40 @@
     }
   }
 
-  async function handleSaveModel(request: ModelCreateRequest) {
-    isSaving = true;
-    try {
-      const now = new Date().toISOString();
+  function updateRightPanel() {
+    if (editMode) {
+      // Set form in right panel
+      layout.configurationTitle = selectedModel ? `Edit Model: ${selectedModel.name}` : 'Add New Model';
+      layout.hasConfigContent = true;
       
-      if (selectedModel) {
-        // Update existing model
-        models = models.map(m => 
-          m.id === selectedModel?.id 
-            ? { 
-                ...m, 
-                name: request.name, 
-                description: request.description ?? '', // Ensure description is never undefined
-                provider: request.provider,
-                config: request.config,
-                updated_at: now
-              } 
-            : m
-        );
-      } else {
-        // Add new model
-        const newModel: ModelResponse = {
-          id: crypto.randomUUID(),
-          name: request.name,
-          description: request.description ?? '', // Ensure description is never undefined
-          provider: request.provider,
-          config: request.config,
-          created_at: now,
-          updated_at: now
-        };
-        
-        models = [...models, newModel];
-        selectedModel = newModel;
-      }
+      // Set form component
+      layout.configContent = () => ({
+        component: AddOllamaModel,
+        props: {
+          model: selectedModel,  // Pass the selected model for editing
+          onSubmit: handleSaveModel,
+          onCancel: cancelEdit
+        }
+      });
+    } else if (selectedModel) {
+      // Set details in right panel
+      layout.configurationTitle = `Model: ${selectedModel.name}`;
+      layout.hasConfigContent = true;
       
-      editMode = false;
-    } catch (e) {
-      alert(e instanceof Error ? e.message : 'Failed to save model');
-    } finally {
-      isSaving = false;
+      // Set details component
+      layout.configContent = () => ({
+        component: ModelDetails,
+        props: {
+          model: selectedModel,
+          onEdit: editModel,
+          onDelete: deleteModelHandler
+        }
+      });
+    } else {
+      // Clear right panel
+      layout.configurationTitle = 'Model Details';
+      layout.hasConfigContent = false;
+      layout.configContent = null;
     }
   }
 </script>
@@ -210,7 +207,7 @@
       {selectedModel}
       onSelectModel={selectModel}
       onEditModel={editModel}
-      onDeleteModel={deleteModel}
+      onDeleteModel={deleteModelHandler}
     />
   {/if}
 </div>

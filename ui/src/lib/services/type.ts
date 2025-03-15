@@ -150,6 +150,17 @@ export enum ModelProviderEnum {
 }
 
 /**
+ * Model Type Enum
+ */
+export enum ModelTypeEnum {
+  HUGGINGFACE = 'huggingface',
+  OLLAMA = 'ollama',
+  OPENAI = 'openai',
+  ANTHROPIC = 'anthropic',
+  CUSTOM_API = 'custom_api'
+}
+
+/**
  * Base Model Configuration
  */
 export type BaseModelConfig = {
@@ -201,9 +212,22 @@ export type ModelConfig =
 export type ModelResponse = {
   id: string;
   name: string;
+  type: ModelTypeEnum;
   description: string;
-  provider: ModelProviderEnum;
-  config: OllamaModelConfig | HuggingFaceModelConfig | CustomApiModelConfig;
+  model_id: string;
+  api_url: string | null;
+  api_version: string | null;
+  parameters: {
+    temperature: number | null;
+    top_p: number | null;
+    top_k: number | null;
+    max_tokens: number | null;
+    stop_sequences: string[] | null;
+    extra_params: Record<string, any>;
+  };
+  memory_required: number | null;
+  gpu_required: boolean;
+  quantization: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -213,9 +237,23 @@ export type ModelResponse = {
  */
 export type ModelCreateRequest = {
   name: string;
+  type: ModelTypeEnum;
   description?: string;
-  provider: ModelProviderEnum;
-  config: OllamaModelConfig | HuggingFaceModelConfig | CustomApiModelConfig;
+  model_id: string;
+  api_url?: string;
+  api_key?: string;
+  api_version?: string;
+  parameters?: {
+    temperature?: number;
+    top_p?: number;
+    top_k?: number;
+    max_tokens?: number;
+    stop_sequences?: string[];
+    extra_params?: Record<string, any>;
+  };
+  memory_required?: number;
+  gpu_required?: boolean;
+  quantization?: string;
 }
 
 /**
@@ -224,5 +262,18 @@ export type ModelCreateRequest = {
 export type ModelUpdateRequest = {
   name?: string;
   description?: string;
-  config?: OllamaModelConfig | HuggingFaceModelConfig | CustomApiModelConfig;
+  api_url?: string;
+  api_key?: string;
+  api_version?: string;
+  parameters?: {
+    temperature?: number;
+    top_p?: number;
+    top_k?: number;
+    max_tokens?: number;
+    stop_sequences?: string[];
+    extra_params?: Record<string, any>;
+  };
+  memory_required?: number;
+  gpu_required?: boolean;
+  quantization?: string;
 }

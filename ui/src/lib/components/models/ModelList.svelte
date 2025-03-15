@@ -20,7 +20,7 @@
       <div class="p-4">
         <div class="mb-2">
           <span class="px-2 py-0.5 bg-surface-700 rounded text-xs font-medium">
-            {model.provider}
+            {model.type}
           </span>
         </div>
         <h3 class="text-lg font-semibold mb-1">{model.name}</h3>
