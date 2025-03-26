@@ -4,6 +4,7 @@
   import CategoryDetails from '$lib/components/categories/CategoryDetails.svelte';
   import CategoryForm from '$lib/components/categories/CategoryForm.svelte';
   import { getContext } from 'svelte';
+  import { onMount } from 'svelte';
   import type { CategoryModel, CategoryCreateRequest, CategoryUpdateRequest } from '$lib/services/type';
 
   // Access layout store to update right panel content
@@ -79,8 +80,10 @@
     }
   }
 
-  // Load categories on page load
-  loadCategories();
+  // Load categories on component mount (client-side only)
+  onMount(() => {
+    loadCategories();
+  });
 
   function selectCategory(category: CategoryModel) {
     selectedCategory = category;
@@ -188,7 +191,7 @@
 
   {#if isLoading}
     <div class="flex items-center justify-center h-64">
-      <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500" />
+      <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary-500"></div>
     </div>
   {:else if error}
     <div class="bg-red-900/30 border border-red-800 text-white p-4 rounded-md">

@@ -40,6 +40,9 @@
     {isSelected ? 'border-primary-500 ring-1 ring-primary-500/30' : ''}
     {task.status === TaskStatusEnum.ARCHIVED ? 'opacity-60' : ''}"
   onclick={() => onSelectTask(task)}
+  onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') onSelectTask(task); }}
+  role="button"
+  tabindex="0"
 >
   <div class="flex justify-between items-start mb-2">
     <div>
@@ -55,6 +58,7 @@
       <button
         onclick={(e) => { e.stopPropagation(); onEditTask(task); }}
         class="p-1.5 text-surface-300 hover:text-white hover:bg-surface-700 rounded"
+        aria-label="Edit task"
         title="Edit task"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -65,6 +69,7 @@
       <button
         onclick={(e) => { e.stopPropagation(); onDeleteTask(task.id); }}
         class="p-1.5 text-surface-300 hover:text-red-400 hover:bg-surface-700 rounded"
+        aria-label="Delete task"
         title="Delete task"
       >
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

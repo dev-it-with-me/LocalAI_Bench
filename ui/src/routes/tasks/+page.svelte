@@ -4,6 +4,7 @@
   import TaskDetails from '$lib/components/tasks/TaskDetails.svelte';
   import TaskForm from '$lib/components/tasks/TaskForm.svelte';
   import { getContext } from 'svelte';
+  import { onMount } from 'svelte';
   import type { TaskCreateRequest, TaskResponse, TaskUpdateRequest, Category } from '$lib/services/type';
   import { TaskStatusEnum } from '$lib/services/type';
   
@@ -135,8 +136,10 @@
     }
   }
 
-  // Load initial data
-  loadData();
+  // Load initial data on component mount (client-side only)
+  onMount(() => {
+    loadData();
+  });
 
   function resetForm() {
     formName = '';

@@ -105,14 +105,26 @@
 	bind:this={panelElement}
 	class="bg-surface-800 border-surface-700 flex h-full flex-col border-l relative {isCollapsed
 		? 'w-0 overflow-hidden'
-		: 'panel-width'}"
+		: 'panel-width'} {isResizing ? 'resizing' : ''}"
 >
 	{#if !isCollapsed}
-		<!-- Resize handle -->
-		<div 
-			class="absolute left-0 top-0 w-1 h-full cursor-ew-resize hover:bg-surface-500 z-10"
-			onmousedown={startResize}
-		></div>
+		<!-- Resize handle - Using button for proper accessibility -->
+		<button
+			class="absolute left-0 top-0 w-1 h-full cursor-ew-resize hover:bg-surface-500 z-10 focus:outline-none focus:bg-surface-500"
+			onmousedown={(e) => {
+				e.preventDefault();  // Prevent button click behavior
+				startResize(e);
+			}}
+			onkeydown={(e) => {
+				if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+					const diff = e.key === 'ArrowLeft' ? 10 : -10;
+					panelWidth = Math.max(minWidth, panelWidth + diff);
+					e.preventDefault();
+				}
+			}}
+			aria-label="Resize panel"
+			title="Drag to resize panel"
+		><span class="sr-only">Resize panel</span></button>
 		
 		<!-- Header - Fixed at the top -->
 		<div class="border-surface-700 flex items-center justify-between border-b p-4">
@@ -162,8 +174,9 @@
 						<p class="mt-4">Select an item to view its details and configuration options</p>
 					</div>
 				{:else if component}
-					<!-- Render dynamic component using svelte:component -->
-					<svelte:component this={component} {...componentProps} />
+					<!-- Render dynamic component (avoiding deprecated svelte:component) -->
+					{@const Component = component}
+					<Component {...componentProps} />
 				{/if}
 			</div>
 		</div>

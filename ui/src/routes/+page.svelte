@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { getModels } from '$lib/services/api';
+	import { onMount } from 'svelte';
 	import ActiveModelsPanel from '$lib/components/ActiveModelsPanel.svelte';
 	import RecentBenchmarksPanel from '$lib/components/RecentBenchmarksPanel.svelte';
 	import QuickActionsPanel from '$lib/components/QuickActionsPanel.svelte';
@@ -31,6 +32,7 @@
 	
 	let isLoading = $state(true);
 	let error = $state('');
+	
 	async function loadModels() {
 		try {
 			activeModels = await getModels() as ModelType[];
@@ -44,7 +46,11 @@
 			isLoading = false;
 		}
 	}
-	loadModels();
+	
+	// Using onMount to ensure fetch only happens on client-side
+	onMount(() => {
+		loadModels();
+	});
 </script>
 <svelte:head>
 	<title>Dashboard | LocalAI Bench</title>

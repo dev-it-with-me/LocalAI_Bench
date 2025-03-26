@@ -90,7 +90,7 @@
           bind:value={localDescription}
           class="w-full px-3 py-2 bg-surface-700 border border-surface-600 rounded-md text-white focus:ring-primary-500 focus:border-primary-500"
           placeholder="Category description"
-        />
+        ></textarea>
       </div>
 
       <div class="flex space-x-3 pt-4">

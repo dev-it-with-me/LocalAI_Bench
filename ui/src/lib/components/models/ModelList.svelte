@@ -16,6 +16,15 @@
     <div 
       class="bg-surface-800 border border-surface-700 rounded-md overflow-hidden hover:border-primary-500 transition-colors cursor-pointer {selectedModel?.id === model.id ? 'border-primary-500 ring-1 ring-primary-500' : ''}"
       onclick={() => onSelectModel(model)}
+      onkeydown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSelectModel(model);
+        }
+      }}
+      role="button"
+      tabindex="0"
+      aria-pressed={selectedModel?.id === model.id}
     >
       <div class="p-4">
         <div class="mb-2">

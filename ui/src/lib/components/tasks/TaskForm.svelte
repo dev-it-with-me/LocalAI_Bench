@@ -212,8 +212,9 @@
   
   <div class="space-y-4 pt-2 border-t border-surface-700">
     <div>
-      <label class="block text-sm font-medium text-surface-200 mb-1">User Instruction</label>
+      <label for="user-instruction" class="block text-sm font-medium text-surface-200 mb-1">User Instruction</label>
       <textarea
+        id="user-instruction"
         rows="5"
         bind:value={formInputData.user_instruction}
         class="w-full px-3 py-2 bg-surface-700 border border-surface-600 rounded-md text-white font-mono text-sm focus:ring-primary-500 focus:border-primary-500"
@@ -222,8 +223,9 @@
     </div>
     
     <div>
-      <label class="block text-sm font-medium text-surface-200 mb-1">System Prompt (optional)</label>
+      <label for="system-prompt" class="block text-sm font-medium text-surface-200 mb-1">System Prompt (optional)</label>
       <textarea
+        id="system-prompt"
         rows="3"
         bind:value={formInputData.system_prompt}
         class="w-full px-3 py-2 bg-surface-700 border border-surface-600 rounded-md text-white font-mono text-sm focus:ring-primary-500 focus:border-primary-500"
@@ -232,7 +234,7 @@
     </div>
     
     <div>
-      <label class="block text-sm font-medium text-surface-200 mb-1">Images (optional)</label>
+      <label for="image-upload" class="block text-sm font-medium text-surface-200 mb-1">Images (optional)</label>
       <div class="mb-2">
         <input
           type="file"
@@ -271,6 +273,7 @@
                   type="button" 
                   onclick={() => removeImage(image.id)} 
                   class="p-1 bg-red-500 text-white rounded-full hover:bg-red-600"
+                  aria-label={`Remove image ${image.filename}`}
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -286,8 +289,9 @@
     </div>
 
     <div>
-      <label class="block text-sm font-medium text-surface-200 mb-1">Expected Output</label>
+      <label for="expected-output" class="block text-sm font-medium text-surface-200 mb-1">Expected Output</label>
         <textarea
+        id="expected-output"
         rows="8"
         bind:value={formExpectedOutput}
         class="w-full px-3 py-2 bg-surface-700 border border-surface-600 rounded-md text-white font-mono text-sm focus:ring-primary-500 focus:border-primary-500"
@@ -315,9 +319,10 @@
       </div>
     
     <div>
-      <label class="block text-sm font-medium text-surface-200 mb-1">Accuracy Weight</label>
+      <label for="accuracy" class="block text-sm font-medium text-surface-200 mb-1">Accuracy Weight</label>
       <div class="flex items-center">
         <input
+          id="accuracy"
           type="range"
           min="0.5"
           max="4"
@@ -330,9 +335,10 @@
     </div>
     
     <div>
-      <label class="block text-sm font-medium text-surface-200 mb-1">Latency Weight</label>
+      <label for="latency" class="block text-sm font-medium text-surface-200 mb-1">Latency Weight</label>
       <div class="flex items-center">
         <input
+          id="latency"
           type="range"
           min="0.5"
           max="4"
@@ -345,9 +351,10 @@
     </div>
     
     <div>
-      <label class="block text-sm font-medium text-surface-200 mb-1">Cost/Memory Usage</label>
+      <label for="cost-memory" class="block text-sm font-medium text-surface-200 mb-1">Cost/Memory Usage</label>
       <div class="flex items-center">
         <input
+          id="cost-memory"
           type="range"
           min="0.5"
           max="4"

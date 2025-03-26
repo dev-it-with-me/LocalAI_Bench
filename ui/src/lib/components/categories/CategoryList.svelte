@@ -47,10 +47,18 @@
   <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
     {#each categories as category}
       <div
+        role="button"
+        tabindex="0"
         class="bg-surface-800 border border-surface-700 rounded-md overflow-hidden hover:border-primary-500 transition-colors cursor-pointer {selectedCategory?.id === category.id
           ? 'border-primary-500 ring-1 ring-primary-500'
           : ''}"
         onclick={() => onSelectCategory(category)}
+        onkeydown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            onSelectCategory(category);
+          }
+        }}
       >
         <div class="p-4">
           <h3 class="text-lg font-semibold mb-1">{category.name}</h3>
