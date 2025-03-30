@@ -122,66 +122,63 @@ class BenchmarkEngine:
     async def update_task_result_score(
         self, 
         task_result_id: str, 
-        quality_score: float,
-        time_weight: float = 0.2,
-        quality_weight: float = 0.4,
-        complexity_weight: float = 0.2,
-        cost_weight: float = 0.1,
-        memory_weight: float = 0.1
+        quality_score: float
     ) -> TaskResult:
         """Update task result with user-provided quality score and calculate ultimate score."""
         task_result = await self.task_result_repo.get_by_id(task_result_id)
         if not task_result:
             raise ValidationError(f"Task result {task_result_id} not found")
         
-        # Get task for complexity info
+        # Get task for evaluation weights
         task = await self.task_repo.get_by_id(task_result.task_id)
         if not task:
             raise ValidationError(f"Task {task_result.task_id} not found")
-            
+
+        evaluation_weights = task.evaluation_weights or EvaluationWeights()
+        
         # Update quality score
         task_result.quality_score = ScoreComponent(
             raw_score=quality_score,
             normalized_score=quality_score / 10.0,  # Normalize to 0-1 range
-            weight=quality_weight,
+            weight=evaluation_weights.accuracy,
             description="User-provided quality score"
         )
         
         # Calculate time score (normalized between 0.8 and 1.2)
         time_score = 1.0
         if task_result.execution_time_seconds:
-            if task_result.execution_time_seconds > task.expected_time_seconds:
-                time_score = max(0.8, 1.0 - (task_result.execution_time_seconds - task.expected_time_seconds) / task.expected_time_seconds)
+            if task.expected_output and task_result.execution_time_seconds > task.expected_output:
+                time_score = max(0.8, 1.0 - (task_result.execution_time_seconds - task.expected_output) / task.expected_output)
             else:
-                time_score = min(1.2, 1.0 + (task.expected_time_seconds - task_result.execution_time_seconds) / task.expected_time_seconds)
+                time_score = min(1.2, 1.0 + (task.expected_output - task_result.execution_time_seconds) / task.expected_output)
                 
         task_result.time_score = ScoreComponent(
             raw_score=time_score,
             normalized_score=time_score,
-            weight=time_weight,
+            weight=evaluation_weights.latency,
             description="Execution time score"
         )
         
         # Set complexity score
         task_result.complexity_score = ScoreComponent(
-            raw_score=task.complexity,
-            normalized_score=task.complexity / 5.0,  # Normalize to 0-1 range
-            weight=complexity_weight,
+            raw_score=evaluation_weights.complexity,
+            normalized_score=evaluation_weights.complexity / 5.0,  # Normalize to 0-1 range
+            weight=evaluation_weights.complexity,
             description="Task complexity score"
         )
         
         # Calculate ultimate score
         ultimate_score = (
-            task_result.time_score.normalized_score * time_weight +
-            task_result.quality_score.normalized_score * quality_weight +
-            task_result.complexity_score.normalized_score * complexity_weight
+            task_result.time_score.normalized_score * evaluation_weights.latency +
+            task_result.quality_score.normalized_score * evaluation_weights.accuracy +
+            task_result.complexity_score.normalized_score * evaluation_weights.complexity
         )
         
         if task_result.cost_score:
-            ultimate_score += task_result.cost_score.normalized_score * cost_weight
+            ultimate_score += task_result.cost_score.normalized_score * evaluation_weights.cost_memory_usage
             
         if task_result.memory_score:
-            ultimate_score += task_result.memory_score.normalized_score * memory_weight
+            ultimate_score += task_result.memory_score.normalized_score * evaluation_weights.cost_memory_usage
             
         task_result.ultimate_score = ultimate_score * 10  # Scale to 0-10 range
         
