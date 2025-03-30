@@ -30,22 +30,27 @@ There is no limit to the number of categories and tasks that can be added to Loc
 ## Scoring
 For each task, there are multiple tasks with different complexity levels and scoring criteria.
 Scoring criteria now include:
-- Time Score: Time taken to complete the task, normalized in the range [0.8, 1.2].
-- Quality Score: How good the solution is based on user judgment or provided ground truth (scale 1 to 10).
-- Complexity Score: Complexity of the task (scale 1 to 5).
-- Cost Factor: A normalized metric representing the cost of executing the task.
-- Memory Usage Factor: A normalized metric measuring memory consumption.
+- Time Score: Based on execution time relative to an expected baseline (if defined).
+- Quality Score: How good the solution is based on user judgment or automated evaluation (scale 1 to 10).
+- Complexity Score: Reflects the inherent difficulty of the task (derived from task properties or weights).
+- Cost Score: Represents the computational cost or API cost (if applicable).
+- Memory Score: Measures memory consumption during execution.
 
-Configurable weights allow users to prioritize components for every task. A proposed formula is:
+These scores are represented using `ScoreComponent` objects, each containing a raw score, a normalized score (typically 0-1), and a weight.
 
-Ultimate Score = (Time Score * w_time) *
-                 (Quality Score * w_quality) *
-                 (Complexity Score * w_complexity) *
-                 (Cost Factor * w_cost) *
-                 (Memory Usage Factor * w_memory)
+The final `ultimate_score` for a task result is calculated as a weighted sum of the normalized scores of its components. The weights can be configured per task via the `evaluation_weights` field in the `Task` model (e.g., `evaluation_weights: EvaluationWeights | None = Field(default=None, description="Evaluation weights for the task")`).
 
-Users can adjust the weights (w_time, w_quality, w_complexity, w_cost, w_memory)
-to tailor the scoring model based on operational and resource constraints.
+A proposed formula structure (implemented in `BenchmarkEngine.update_task_result_score`):
+
+Ultimate Score = (
+    (time_score.normalized_score * time_weight) +
+    (quality_score.normalized_score * quality_weight) +
+    (complexity_score.normalized_score * complexity_weight) +
+    (cost_score.normalized_score * cost_weight) +
+    (memory_score.normalized_score * memory_weight)
+) * 10  # Scaled to 0-10
+
+*Note: The current implementation in `BenchmarkEngine.update_task_result_score` needs alignment to correctly use the `evaluation_weights` defined in the `Task` model instead of hardcoded weights or non-existent task fields like `complexity` and `expected_time_seconds`.*
 
 ### Automated Evaluation
 For objective measurement of Quality Score, the system will implement:
@@ -99,24 +104,34 @@ The dashboard provides a summary of the scores for each model in each category, 
 ## Data Storage and Sharing
 
 ### JSON Data Structure
-LocalAI Bench uses JSON files for data storage to facilitate easy sharing of benchmarks and results:
+LocalAI Bench uses JSON files for data storage. Data is organized into subdirectories within the main data directory (defined in `config.py`).
 
 ```
-/data
+/data  (e.g., specified by settings.DATA_DIR)
   /categories
-    coding_ui_vision.json
-    document_understanding.json
-    recruitment_process.json
+    category_id_1.json
+    category_id_2.json
+    ...
   /tasks
     task_id_1.json
     task_id_2.json
-    task_id_3.json
+    ...
   /models
     model_id_1.json
     model_id_2.json
+    ...
   /results
+    # Stores results from benchmark runs
+    # BenchmarkRunRepository stores benchmark_run_id.json files
+    # TaskResultRepository stores task_result_id.json files
     benchmark_run_id_1.json
+    task_result_id_abc.json
+    task_result_id_def.json
     benchmark_run_id_2.json
+    task_result_id_xyz.json
+    ...
+  /logs
+    app.log
 ```
 
 ### Export/Import Functionality
@@ -167,38 +182,31 @@ The export/import system allows users to share benchmarks, tasks, and results wi
 ## Implementation Notes
 ### Backend Architecture
 - Python 3.12+ with FastAPI
-  - Modular structure with:
-    - Core benchmark engine
-    - Model adapters (Hugging Face, Ollama, API)
-    - Task management system
-    - Result storage and analysis
-  - Pydantic for data validation
-  - Structured logging with correlation IDs
-  - Async processing for concurrent benchmarks
-- **Benchmark Service**: Manages benchmark runs, status tracking, and results analysis.
-- **Category Service**: Handles CRUD operations for categories and task assignments.
-- **Task Service**: Manages CRUD operations for tasks, category assignments, and status.
-- **Model Service**: Manages CRUD operations and testing for AI models.
-- **Import/Export Service**: Provides data export/import functionality.
+  - Modular structure with service-specific directories under `app/services/`:
+    - Each service (e.g., `model_service`, `task_service`) contains its own `routes.py`, `schemas.py`, `service.py`, `repositories.py`, `models.py`, and potentially `enums.py`.
+  - Core benchmark engine logic within `BenchmarkService` and `BenchmarkEngine`.
+  - Model adapters (Hugging Face, Ollama, API) located in `app/adapters/`.
+  - Pydantic for data validation across schemas and models.
+  - Structured logging with correlation IDs configured in `app/utils.py`.
+  - Async processing for concurrent benchmarks.
 
-Each service will have its own:
-- Routes (API endpoints)
-- Schemas (request/response models)
-- Services (business logic)
-- Repositories (data access)
-- Models (Pydantic models)
-- Configuration
+#### Service Overview
+- **Benchmark Service**: Manages benchmark runs, status tracking, results aggregation, and scoring updates. Depends on Task, Model, and Category services/repositories.
+- **Category Service**: Handles CRUD operations for categories. Manages relationships between categories and tasks.
+- **Task Service**: Manages CRUD operations for tasks, including input data, expected outputs, and evaluation weights.
+- **Model Service**: Manages CRUD operations for AI model configurations and provides model testing functionality.
+- **Import/Export Service**: Provides data export/import functionality for benchmarks, categories, tasks, and results.
 
 ### Core Components
-- Configuration system using Pydantic Settings in `app/config.py`
-- Data models defined with Pydantic in `app/models.py` (shared models)
-- Enum definitions in `app/enums.py` (shared enums)
-- Custom exceptions in `app/exceptions.py` (shared exceptions)
-- JSON-based data storage utilities in `app/utils.py`
+- Configuration system using Pydantic Settings in `app/config.py`.
+- Shared base data models (e.g., `BaseEntityModel`) defined in `app/models.py`. Service-specific models are in their respective directories (e.g., `app/services/model_service/models.py`).
+- Shared Enum definitions in `app/enums.py`. Service-specific enums can exist within service directories.
+- Custom exceptions defined in `app/exceptions.py`.
+- JSON-based data storage utilities (`JsonFileHandler`, `BaseRepository`) in `app/utils.py` and `app/repositories.py`.
 - Model adapters in `app/adapters/`:
-  - `base.py` - Base adapter interface and factory
-  - `huggingface.py` - Adapter for Hugging Face models
-  - `ollama.py` - Adapter for Ollama models
+  - `base.py` - Defines `ModelAdapter` ABC and `ModelAdapterFactory`.
+  - `huggingface.py` - Adapter for Hugging Face models (uses `app.services.model_service.models.Model`).
+  - `ollama.py` - Adapter for Ollama models (uses `app.services.model_service.models.Model`).
 
 ### Data Management
 - JSON-based data store
@@ -210,6 +218,111 @@ Each service will have its own:
   - Caching frequently accessed data
   - Optimized JSON parsing for large datasets
   - Atomic file operations to prevent corruption
+
+### Backend Architecture Diagrams (Mermaid)
+
+#### High-Level Overview
+
+```mermaid
+graph TD
+    subgraph User Interface Svelte
+        direction LR
+        UI[UI Components]
+    end
+
+    subgraph Backend API FastAPI
+        direction TB
+        Main[app/main.py] --> Routers{API Routers}
+        Routers -->|/api/models| ModelRoutes[services/model_service/routes.py]
+        Routers -->|/api/tasks| TaskRoutes[services/task_service/routes.py]
+        Routers -->|/api/categories| CategoryRoutes[services/category_service/routes.py]
+        Routers -->|/api/benchmarks| BenchmarkRoutes[services/benchmark_service/routes.py]
+        Routers -->|/api/import-export| ImportExportRoutes[services/import_export_service/routes.py]
+
+        ModelRoutes --> ModelService[services/model_service/service.py]
+        TaskRoutes --> TaskService[services/task_service/service.py]
+        CategoryRoutes --> CategoryService[services/category_service/service.py]
+        BenchmarkRoutes --> BenchmarkService[services/benchmark_service/service.py]
+        ImportExportRoutes --> ImportExportService[services/import_export_service/service.py]
+
+        Main --> ExcHandlers[Exception Handlers]
+        Main --> Middleware[CORS Middleware]
+        Main --> Config[app/config.py]
+        ExcHandlers --> Exceptions[app/exceptions.py]
+    end
+
+    subgraph Services Layer
+        direction TB
+        BenchmarkService --> TaskService
+        BenchmarkService --> ModelService
+        BenchmarkService --> CategoryService
+        BenchmarkService --> BenchmarkRepo[services/benchmark_service/repositories.py]
+        BenchmarkService --> TaskResultRepo[services/benchmark_service/repositories.py]
+        BenchmarkService --> Adapters[Model Adapters]
+
+        ModelService --> ModelRepo[services/model_service/repositories.py]
+        ModelService --> Adapters
+
+        TaskService --> TaskRepo[services/task_service/repositories.py]
+        CategoryService --> CategoryRepo[services/category_service/repositories.py]
+
+        ImportExportService --> ModelService
+        ImportExportService --> TaskService
+        ImportExportService --> CategoryService
+        ImportExportService --> BenchmarkService
+    end
+
+    subgraph Data Layer
+        direction TB
+        ModelRepo --> BaseRepo[app/repositories.py]
+        TaskRepo --> BaseRepo
+        CategoryRepo --> BaseRepo
+        BenchmarkRepo --> BaseRepo
+        TaskResultRepo --> BaseRepo
+        BaseRepo --> JsonHandler[app/utils.py:JsonFileHandler]
+        JsonHandler --> FileSystem[(JSON Files in /data)]
+    end
+
+    subgraph Adapters Layer
+        direction TB
+        Adapters[Model Adapters] --> AdapterFactory[adapters/base.py:ModelAdapterFactory]
+        AdapterFactory --> OllamaAdapter[adapters/ollama.py]
+        AdapterFactory --> HFAdapter[adapters/huggingface.py]
+        Adapters --> ModelConfig[services/model_service/models.py:Model]
+        Adapters --> Exceptions
+        Adapters --> Config
+    end
+
+    UI --> Backend_API
+    Backend_API --> Services_Layer
+    Services_Layer --> Data_Layer
+    Services_Layer --> Adapters_Layer
+    Adapters_Layer --> Data_Layer
+
+    style FileSystem fill:#f9f,stroke:#333,stroke-width:2px
+```
+
+#### Model Service Internal Structure
+
+```mermaid
+graph LR
+    Router[routes.py] -- Uses --> Service[service.py]
+    Router -- Uses --> Schemas[schemas.py]
+    Service -- Uses --> Repository[repositories.py]
+    Service -- Uses --> Models[models.py]
+    Service -- Uses --> Exceptions[app/exceptions.py]
+    Service -- Uses --> Adapters[adapters/*]
+    Repository -- Uses --> BaseRepo[app/repositories.py]
+    Repository -- Uses --> Models
+    BaseRepo -- Uses --> JsonHandler[app/utils.py:JsonFileHandler]
+
+    style Router fill:#ccf
+    style Service fill:#cdf
+    style Repository fill:#cfc
+    style Schemas fill:#fcc
+    style Models fill:#fec
+    style Adapters fill:#dff
+```
 
 ### Frontend Architecture
 - Svelte 5 + TypeScript
