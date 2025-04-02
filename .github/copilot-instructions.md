@@ -5,6 +5,15 @@
 **Review & Updates:** These guidelines will be reviewed periodically (e.g., quarterly or as major dependencies change) and updated as needed. Feedback and suggestions for improvement are welcome.
 
 # Python
+
+## Package Management
+
+Use 'uv' for package management:
+
+*   **Installation:** Use `pip install uv` to install the package.
+*   **Usage:** Use `uv` to manage dependencies and virtual environments. For example, `uv add {package_name} --dev` to add a package as a development dependency.
+*   **Environment:** Use `uv sync` to synchronize the environment.
+
 ## File Structure
 
 Organize code into logical modules:
