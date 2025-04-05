@@ -7,10 +7,10 @@ This module imports and configures all API routes from service-specific route mo
 from fastapi import APIRouter
 
 # from app.services.benchmark_service.routes import benchmark_router
-from app.services.category_service.routes import category_router
-from app.services.import_export_service.routes import import_export_router
-from app.services.model_service.routes import model_router
-from app.services.task_service.routes import task_router
+from app.modules.category_service.routes import category_router
+from app.modules.import_export_service.routes import import_export_router
+from app.modules.model_service.routes import model_router
+from app.modules.task_service.routes import task_router
 
 # Create the main API router
 api_router = APIRouter(prefix="/api")

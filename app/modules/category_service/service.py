@@ -5,9 +5,9 @@ Category service implementation.
 from typing import Optional
 
 from app.exceptions import ValidationError
-from app.services.category_service.models import Category
-from app.services.task_service.models import Task
-from app.services.category_service.repositories import CategoryRepository, TaskRepository
+from app.modules.category_service.models import Category
+from app.modules.task_service.models import Task
+from app.modules.category_service.repositories import CategoryRepository, TaskRepository
 from app.utils import get_logger
 
 
@@ -26,11 +26,7 @@ class CategoryService:
         description: str = "",
     ) -> Category:
         """Create a new category."""
-        category = Category(
-            name=name,
-            description=description,
-            task_ids=[]
-        )
+        category = Category(name=name, description=description, task_ids=[])
 
         if self.category_repo.create(category):
             self.logger.info(f"Created category: {category.id}")
@@ -98,9 +94,7 @@ class CategoryService:
 
         return tasks
 
-    async def add_task_to_category(
-        self, category_id: str, task_id: str
-    ) -> Category:
+    async def add_task_to_category(self, category_id: str, task_id: str) -> Category:
         """Add a task to a category."""
         category = await self.get_category(category_id)
 
@@ -132,9 +126,7 @@ class CategoryService:
 
         # Check if task in category
         if task_id not in category.task_ids:
-            raise ValidationError(
-                f"Task {task_id} not in category {category_id}"
-            )
+            raise ValidationError(f"Task {task_id} not in category {category_id}")
 
         # Remove task from category
         category.task_ids.remove(task_id)

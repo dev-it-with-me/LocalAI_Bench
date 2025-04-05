@@ -3,12 +3,12 @@ import abc
 from typing import TypeVar, Generic, Any
 from collections.abc import AsyncIterator
 from app.enums import ModelTypeEnum
-from app.services.model_service.models import Model
+from app.modules.model_service.models import Model
 from app.exceptions import ModelAdapterError
 from app.utils import get_logger
 
 # Type variable for response types
-T = TypeVar('T')
+T = TypeVar("T")
 
 
 class ModelAdapter(Generic[T], abc.ABC):

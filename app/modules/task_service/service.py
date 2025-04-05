@@ -1,13 +1,14 @@
 """
 Task service implementation.
 """
+
 from typing import Any
 
 from app.enums import TaskStatusEnum
 from app.exceptions import ValidationError
-from app.services.task_service.models import Task, InputData, EvaluationWeights
-from app.services.category_service.repositories import CategoryRepository
-from app.services.task_service.repositories import TaskRepository
+from app.modules.task_service.models import Task, InputData, EvaluationWeights
+from app.modules.category_service.repositories import CategoryRepository
+from app.modules.task_service.repositories import TaskRepository
 
 from app.utils import get_logger
 
@@ -39,13 +40,18 @@ class TaskService:
                 raise ValidationError(f"Category not found: {category_id}")
         # Convert dictionaries to Pydantic models
         input_data_model = InputData(**(input_data or {}))
-        evaluation_weights_model = EvaluationWeights(**(evaluation_weights or {})) if evaluation_weights else None
+        evaluation_weights_model = (
+            EvaluationWeights(**(evaluation_weights or {}))
+            if evaluation_weights
+            else None
+        )
 
         # Create task
         task = Task(
             name=name,
             description=description,
-            category_id=category_id or "",  # Using empty string as default per model definition
+            category_id=category_id
+            or "",  # Using empty string as default per model definition
             input_data=input_data_model,
             expected_output=expected_output,
             evaluation_weights=evaluation_weights_model,
@@ -167,6 +173,4 @@ class TaskService:
         if task.category_id:
             category = self.category_repo.get_by_id(task.category_id)
             if not category:
-                raise ValidationError(
-                    f"Category not found: {task.category_id}"
-                )
+                raise ValidationError(f"Category not found: {task.category_id}")

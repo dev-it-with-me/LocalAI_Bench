@@ -5,11 +5,14 @@ from collections.abc import AsyncIterator
 
 from pydantic import BaseModel, Field
 
-from app.adapters.base import ModelAdapter, ModelAdapterFactory  # Import corrected base class and factory
+from app.adapters.base import (
+    ModelAdapter,
+    ModelAdapterFactory,
+)  # Import corrected base class and factory
 from app.config import settings
 from app.enums import ModelTypeEnum
 from app.exceptions import ModelAdapterError
-from app.services.model_service.models import Model
+from app.modules.model_service.models import Model
 from ollama import AsyncClient
 
 
@@ -21,9 +24,15 @@ class OllamaParams(BaseModel):
     temperature: float | None = Field(None, description="The temperature of the model.")
     top_p: float | None = Field(None, description="Top-p (nucleus) sampling.")
     top_k: int | None = Field(None, description="Top-k sampling.")
-    max_tokens: int | None = Field(None, alias="num_predict", description="Maximum number of tokens to generate.")
-    stop_sequences: list[str] | None = Field(None, alias="stop", description="Sequences at which to stop generation.")
-    extra_params: dict[str, Any] = Field(default_factory=dict, description="Additional, non-standard parameters.")
+    max_tokens: int | None = Field(
+        None, alias="num_predict", description="Maximum number of tokens to generate."
+    )
+    stop_sequences: list[str] | None = Field(
+        None, alias="stop", description="Sequences at which to stop generation."
+    )
+    extra_params: dict[str, Any] = Field(
+        default_factory=dict, description="Additional, non-standard parameters."
+    )
 
 
 class OllamaAdapter(ModelAdapter[str]):
@@ -38,11 +47,17 @@ class OllamaAdapter(ModelAdapter[str]):
     async def initialize(self) -> None:
         """Initialize the connection to Ollama API."""
         try:
-            self.logger.info(f"Initializing connection to Ollama API at {self.ollama_host}")
+            self.logger.info(
+                f"Initializing connection to Ollama API at {self.ollama_host}"
+            )
             self.client = AsyncClient(host=self.ollama_host)
-            self.logger.info(f"Checking if model {self.model_config.model_id} is available")
+            self.logger.info(
+                f"Checking if model {self.model_config.model_id} is available"
+            )
             model_info = await self.client.show(model=self.model_config.model_id)
-            self.logger.info(f"Model {self.model_config.model_id} is available: {model_info['digest']}")
+            self.logger.info(
+                f"Model {self.model_config.model_id} is available: {model_info['digest']}"
+            )
 
         except Exception as e:
             error_msg = f"Failed to initialize Ollama model {self.model_config.model_id}: {str(e)}"
@@ -59,7 +74,9 @@ class OllamaAdapter(ModelAdapter[str]):
         """
         params = OllamaParams(**self.model_config.parameters.model_dump(), **kwargs)
         ollama_options = params.model_dump(exclude_none=True, by_alias=True)
-        ollama_options.update(ollama_options.pop("extra_params", {}))  # Flatten extra_params
+        ollama_options.update(
+            ollama_options.pop("extra_params", {})
+        )  # Flatten extra_params
         return ollama_options
 
     async def generate(self, prompt: str, **kwargs) -> str:
@@ -113,7 +130,9 @@ class OllamaAdapter(ModelAdapter[str]):
                     yield chunk["response"]
 
         except Exception as e:
-            error_msg = f"Error generating streaming response for prompt '{prompt}': {str(e)}"
+            error_msg = (
+                f"Error generating streaming response for prompt '{prompt}': {str(e)}"
+            )
             self.logger.error(error_msg)
             raise ModelAdapterError(
                 error_msg,
@@ -132,7 +151,7 @@ class OllamaAdapter(ModelAdapter[str]):
         return {
             "type": self.model_config.type.value,
             "model_id": self.model_config.model_id,
-            "initialized": self.client is not None
+            "initialized": self.client is not None,
         }
 
     async def cleanup(self) -> None:
@@ -142,7 +161,9 @@ class OllamaAdapter(ModelAdapter[str]):
                 # Assuming AsyncClient has a close method.  Check the ollama library docs.
                 # await self.client.close()
                 self.client = None
-            self.logger.info(f"Cleaned up resources for Ollama model {self.model_config.model_id}")
+            self.logger.info(
+                f"Cleaned up resources for Ollama model {self.model_config.model_id}"
+            )
 
         except Exception as e:
             error_msg = f"Error cleaning up resources: {str(e)}"
@@ -154,7 +175,9 @@ class OllamaAdapter(ModelAdapter[str]):
             ) from e
 
     @classmethod
-    async def check_model_availability(cls, model_id: str, host: str | None = None) -> bool:
+    async def check_model_availability(
+        cls, model_id: str, host: str | None = None
+    ) -> bool:
         """Check if a model is available on the Ollama instance."""
         try:
             host = host or settings.OLLAMA_HOST
@@ -171,4 +194,4 @@ class OllamaAdapter(ModelAdapter[str]):
         return ModelTypeEnum.OLLAMA
 
 
-ModelAdapterFactory.register_adapter(OllamaAdapter) # Register adapter
+ModelAdapterFactory.register_adapter(OllamaAdapter)  # Register adapter
