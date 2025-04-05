@@ -7,24 +7,30 @@ This module defines custom exceptions used throughout the application.
 
 class LocalAIBenchError(Exception):
     """Base class for all LocalAI Bench application exceptions."""
-    
-    def __init__(self, message: str = "An error occurred in the LocalAI Bench application"):
+
+    def __init__(
+        self, message: str = "An error occurred in the LocalAI Bench application"
+    ):
         self.message = message
         super().__init__(self.message)
 
 
 class ConfigurationError(LocalAIBenchError):
     """Exception raised for errors in application configuration."""
-    
+
     def __init__(self, message: str = "Configuration error"):
         super().__init__(f"Configuration error: {message}")
 
 
 class DataStorageError(LocalAIBenchError):
     """Exception raised for errors in data storage operations."""
-    
-    def __init__(self, message: str = "Data storage error", entity_type: str | None = None, 
-                 entity_id: str | None = None):
+
+    def __init__(
+        self,
+        message: str = "Data storage error",
+        entity_type: str | None = None,
+        entity_id: str | None = None,
+    ):
         msg = f"Data storage error: {message}"
         if entity_type:
             msg += f" [Entity Type: {entity_type}"
@@ -38,9 +44,13 @@ class DataStorageError(LocalAIBenchError):
 
 class ModelAdapterError(LocalAIBenchError):
     """Exception raised for errors in model adapters."""
-    
-    def __init__(self, message: str = "Model adapter error", model_type: str | None = None,
-                 model_id: str | None = None):
+
+    def __init__(
+        self,
+        message: str = "Model adapter error",
+        model_type: str | None = None,
+        model_id: str | None = None,
+    ):
         msg = f"Model adapter error: {message}"
         if model_type:
             msg += f" [Model Type: {model_type}"
@@ -54,7 +64,7 @@ class ModelAdapterError(LocalAIBenchError):
 
 class ValidationError(LocalAIBenchError):
     """Exception raised for validation errors."""
-    
+
     def __init__(self, message: str = "Validation error", field: str | None = None):
         msg = f"Validation error: {message}"
         if field:
@@ -65,10 +75,14 @@ class ValidationError(LocalAIBenchError):
 
 class BenchmarkExecutionError(LocalAIBenchError):
     """Exception raised for errors during benchmark execution."""
-    
-    def __init__(self, message: str = "Benchmark execution error", 
-                 benchmark_id: str | None = None, task_id: str | None = None,
-                 model_id: str | None = None):
+
+    def __init__(
+        self,
+        message: str = "Benchmark execution error",
+        benchmark_id: str | None = None,
+        task_id: str | None = None,
+        model_id: str | None = None,
+    ):
         msg = f"Benchmark execution error: {message}"
         context_parts = []
         if benchmark_id:
@@ -77,10 +91,10 @@ class BenchmarkExecutionError(LocalAIBenchError):
             context_parts.append(f"Task: {task_id}")
         if model_id:
             context_parts.append(f"Model: {model_id}")
-        
+
         if context_parts:
             msg += f" [{', '.join(context_parts)}]"
-            
+
         super().__init__(msg)
         self.benchmark_id = benchmark_id
         self.task_id = task_id
@@ -89,8 +103,10 @@ class BenchmarkExecutionError(LocalAIBenchError):
 
 class ResourceError(LocalAIBenchError):
     """Exception raised for resource-related errors."""
-    
-    def __init__(self, message: str = "Resource error", resource_type: str | None = None):
+
+    def __init__(
+        self, message: str = "Resource error", resource_type: str | None = None
+    ):
         msg = f"Resource error: {message}"
         if resource_type:
             msg += f" [Resource Type: {resource_type}]"
@@ -100,8 +116,10 @@ class ResourceError(LocalAIBenchError):
 
 class AuthenticationError(LocalAIBenchError):
     """Exception raised for authentication errors."""
-    
-    def __init__(self, message: str = "Authentication error", provider: str | None = None):
+
+    def __init__(
+        self, message: str = "Authentication error", provider: str | None = None
+    ):
         msg = f"Authentication error: {message}"
         if provider:
             msg += f" [Provider: {provider}]"
@@ -111,8 +129,10 @@ class AuthenticationError(LocalAIBenchError):
 
 class ImportExportError(LocalAIBenchError):
     """Exception raised for import/export errors."""
-    
-    def __init__(self, message: str = "Import/export error", operation: str | None = None):
+
+    def __init__(
+        self, message: str = "Import/export error", operation: str | None = None
+    ):
         msg = f"Import/export error: {message}"
         if operation:
             msg += f" [Operation: {operation}]"
@@ -126,18 +146,20 @@ class BaseError(Exception):
 
 class ModelNotFoundError(BaseError):
     """Raised when a model is not found."""
+
     def __init__(self, model_id: str) -> None:
         super().__init__(f"Model not found: {model_id}")
 
 
-
 class ImportConflictError(BaseError):
     """Raised when there is a conflict during import."""
+
     pass
 
 
 class ModelTestError(Exception):
     """Exception raised for errors in the model testing process."""
+
     def __init__(self, message: str, model_id: str):
         self.message = message
         self.model_id = model_id
