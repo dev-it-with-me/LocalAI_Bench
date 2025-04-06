@@ -24,3 +24,10 @@ else
     echo "Error: $INPUT_PATH is not a valid file or directory"
     exit 1
 fi
+
+# Example usage:
+# To run svelte-check on a directory:
+#   ./svelte-checks.sh /path/to/your/svelte/project
+#
+# To run svelte-check on a single file:
+#   ./svelte-checks.sh /path/to/your/component.svelte

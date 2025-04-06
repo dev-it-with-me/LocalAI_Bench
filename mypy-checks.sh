@@ -24,3 +24,9 @@ else
     exit 1
 fi
 
+# Example usage:
+# To run mypy on a directory:
+#   ./mypy-checks.sh /path/to/your/python/project
+#
+# To run mypy on a single file:
+#   ./mypy-checks.sh /path/to/your/file.py
